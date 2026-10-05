@@ -1,25 +1,837 @@
 import React, {useState} from 'react';
 import {createRoot} from 'react-dom/client';
-import {ArrowUpRight, ArrowRight, Menu, X, Globe2, ShoppingBag, PanelsTopLeft, Cloud, Headset, ShieldCheck, Code2, Layers3, Send} from 'lucide-react';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Cloud,
+  Code2,
+  Globe2,
+  Headset,
+  Layers3,
+  Menu,
+  PanelsTopLeft,
+  Send,
+  ShieldCheck,
+  ShoppingBag,
+  X,
+} from 'lucide-react';
 import './styles.css';
-const services=[
-  {icon:Globe2,title:'Web development',detail:'Business websites and digital experiences that make your work clear and accessible.',tags:'Websites · Landing pages · Maintenance'},
-  {icon:ShoppingBag,title:'E-commerce',detail:'Thoughtful online storefronts that help customers discover and buy your products.',tags:'Catalogues · Checkout planning · Store UX'},
-  {icon:PanelsTopLeft,title:'Custom web applications',detail:'Purpose-built tools for workflows that need more than an off-the-shelf solution.',tags:'Platforms · Dashboards · Portals'},
-  {icon:Cloud,title:'Cloud & maintenance',detail:'Practical support for deployment, updates and keeping your digital presence running.',tags:'Deployment · Updates · Support'},
-  {icon:Headset,title:'IT consulting',detail:'Clear guidance on choosing the right technology for your organisation.',tags:'Planning · Systems · Digital strategy'}
+
+type NavItem = {
+  label: string;
+  href: string;
+};
+
+type Service = {
+  icon: typeof Globe2;
+  title: string;
+  detail: string;
+  tags: string[];
+};
+
+const navItems: NavItem[] = [
+  {label: 'Work', href: '#work'},
+  {label: 'Services', href: '#services'},
+  {label: 'Process', href: '#process'},
+  {label: 'About', href: '#about'},
+  {label: 'Contact', href: '#contact'},
 ];
-const steps=['Discover','Design','Build','Deploy','Support'];
-function App(){const [menuOpen,setMenuOpen]=useState(false);const [copied,setCopied]=useState(false);
-  const nav=[['Work','#work'],['Services','#services'],['Process','#process'],['About','#about'],['Contact','#contact']];
-  const close=()=>setMenuOpen(false);
-  const copyBrief=async()=>{try{await navigator.clipboard.writeText('Hello Tech & GUARD,\n\nMy name is: \nMy organisation: \nI need help with: \nProject details: \nPreferred contact: ');setCopied(true);setTimeout(()=>setCopied(false),3000)}catch{setCopied(false)}};
-  return <><a className="skip" href="#main">Skip to content</a><header className="site-header"><a className="brand" href="#top" onClick={close} aria-label="Tech and GUARD home"><span className="brand-mark">T<span>&</span>G</span><span className="brand-name">TECH <em>&</em> GUARD<small>DIGITAL SOLUTIONS</small></span></a><nav className={menuOpen?'nav open':'nav'} aria-label="Main navigation">{nav.map(([label,href])=><a onClick={close} href={href} key={label}>{label}</a>)}<a className="nav-cta" href="#contact" onClick={close}>Start a project <ArrowUpRight size={15}/></a></nav><button className="menu-toggle" onClick={()=>setMenuOpen(!menuOpen)} aria-label={menuOpen?'Close menu':'Open menu'} aria-expanded={menuOpen}>{menuOpen?<X/>:<Menu/>}</button></header>
-  <main id="main"><section id="top" className="hero"><div className="hero-glow"/><div className="grid-haze"/><div className="container hero-inner"><div className="eyebrow"><span className="pulse"/> SOUTH AFRICAN DIGITAL STUDIO <span className="line"/> 01 / 05</div><h1>ARCHITECTING<br/><span>DIGITAL</span><br/>RESILIENCE<span className="period">.</span></h1><div className="hero-bottom"><p>We design, build and support practical digital solutions that help businesses work smarter and grow with confidence.</p><div className="actions"><a className="button primary" href="#contact">Start a project <ArrowUpRight size={18}/></a><a className="button ghost" href="#work">Explore our work <ArrowRight size={18}/></a></div></div><div className="hero-index">TECHNOLOGY WITH PURPOSE <span>SCROLL TO EXPLORE ↓</span></div></div><div className="hero-orbit" aria-hidden="true"><div className="orbit a"/><div className="orbit b"/><div className="orbit c"/><div className="orbit-core">T<span>&</span>G</div></div></section>
-  <section className="statement container"><span className="label">/ OUR POINT OF VIEW</span><p>Good technology makes the complex feel <em>simple.</em> We build digital experiences around real people, real work and real opportunities.</p></section>
-  <section id="services" className="section services"><div className="container"><div className="section-heading"><div><span className="label">01 / EXPERTISE</span><h2>Technology built<br/>around <span>your business.</span></h2></div><p>From the first idea to the next iteration, we focus on solutions that are useful, considered and built to evolve.</p></div><div className="service-grid">{services.map((s,i)=><article className="service" key={s.title}><div className="service-top"><s.icon size={26} strokeWidth={1.5}/><span>0{i+1}</span></div><h3>{s.title}</h3><p>{s.detail}</p><small>{s.tags}</small></article>)}</div></div></section>
-  <section id="work" className="section work"><div className="container"><div className="section-heading"><div><span className="label">02 / SELECTED WORK</span><h2>From concept to<br/><span>working technology.</span></h2></div><p>A look at our own platforms and products in development. Project status is shown clearly below.</p></div><div className="projects"><article className="project project-blue"><div className="project-copy"><span className="project-num">01 / EDUCATION TECHNOLOGY</span><h3>SmartBridge<br/>FET<span>.</span></h3><p>An education platform concept connecting learners with tutoring and learning opportunities.</p><div className="pills"><span>Platform design</span><span>Education</span><span>In development</span></div></div><div className="project-art smart" aria-hidden="true"><div className="mock-window"><div className="mock-bar"><i/><i/><i/></div><div className="mock-side"/><div className="mock-content"><div className="mock-title"/><div className="mock-line"/><div className="mock-cards"><b/><b/><b/></div></div></div></div></article><article className="project project-dark"><div className="project-copy"><span className="project-num">02 / DIGITAL COMMERCE</span><h3>Tech & GUARD<br/>Store<span>.</span></h3><p>Our product storefront for technology accessories and everyday essentials, developed as an ongoing commerce project.</p><div className="pills"><span>E-commerce</span><span>Customer experience</span><span>Own project</span></div><a className="text-link" href="https://tech-and-guard.base44.app" target="_blank" rel="noopener noreferrer">Visit the store <ArrowUpRight size={17}/></a></div><div className="project-art store" aria-hidden="true"><div className="store-card"><div className="store-object"/><div className="store-caption"/><div className="store-caption short"/></div><div className="store-card behind"/></div></article></div><p className="work-note">More experiments and case studies will be added as they are ready to share.</p></div></section>
-  <section id="process" className="section process"><div className="container"><div className="section-heading"><div><span className="label">03 / APPROACH</span><h2>From problem<br/>to <span>solution.</span></h2></div><p>A straightforward process that makes room for discovery, careful execution and ongoing improvement.</p></div><div className="steps">{steps.map((s,i)=><div className="step" key={s}><span>0{i+1}</span><h3>{s}</h3><ArrowUpRight size={20}/></div>)}</div></div></section>
-  <section id="about" className="section about"><div className="container about-grid"><div><span className="label">04 / ABOUT US</span><h2>Technology<br/>with <span>purpose.</span></h2></div><div className="about-copy"><p>Tech & GUARD (Pty) Ltd is a South African technology company focused on practical digital solutions for businesses, organisations and entrepreneurs.</p><p>We bring design and development together to turn ideas and operational challenges into digital tools people can actually use.</p><div className="values"><div><ShieldCheck/><span>Practical by design</span></div><div><Layers3/><span>Made to evolve</span></div><div><Code2/><span>Built with care</span></div></div></div></div></section>
-  <section id="contact" className="section contact"><div className="container contact-inner"><span className="label">05 / GET IN TOUCH</span><h2>Have a problem<br/>worth <span>solving?</span></h2><p>Tell us what you are trying to build, improve or solve. Start with a short project brief and we can take it from there.</p><button className="button primary" onClick={copyBrief}>Copy a project brief <Send size={17}/></button><span className="copy-status" role="status">{copied?'Brief copied. Paste it into your preferred message or email.':'A contact address and enquiry form will be added when confirmed.'}</span></div></section></main><footer><div className="container footer-inner"><a className="brand footer-brand" href="#top"><span className="brand-mark">T<span>&</span>G</span><span className="brand-name">TECH <em>&</em> GUARD<small>DIGITAL SOLUTIONS</small></span></a><span>© {new Date().getFullYear()} Tech & GUARD (Pty) Ltd.</span><a href="#top">Back to top ↑</a></div></footer></>}
-createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
+
+const services: Service[] = [
+  {
+    icon: Globe2,
+    title: 'Premium web experiences',
+    detail: 'Strategic business websites designed to sharpen trust, clarity and conversion from the very first scroll.',
+    tags: ['Brand strategy', 'UX design', 'Performance']
+  },
+  {
+    icon: ShoppingBag,
+    title: 'E-commerce systems',
+    detail: 'Conversion-driven storefronts and digital commerce experiences built for clarity, confidence and measurable growth.',
+    tags: ['Shop UX', 'Checkout flow', 'Catalog design']
+  },
+  {
+    icon: PanelsTopLeft,
+    title: 'Custom platforms',
+    detail: 'Purpose-built digital tools for teams that need more than off-the-shelf software and better control over outcomes.',
+    tags: ['Dashboards', 'Portals', 'Operations']
+  },
+  {
+    icon: Cloud,
+    title: 'Cloud & support',
+    detail: 'Deployment, maintenance and performance tuning that keeps your digital presence stable and trusted over time.',
+    tags: ['Hosting', 'Monitoring', 'Updates']
+  },
+  {
+    icon: Headset,
+    title: 'Technology consulting',
+    detail: 'Clear advice on systems, technology decisions and digital investments aligned to business reality.',
+    tags: ['Planning', 'Systems', 'Roadmaps']
+  },
+];
+
+const stats = [
+  {value: '5+', label: 'delivery disciplines'},
+  {value: '100%', label: 'human-centred design'},
+  {value: '24/7', label: 'support mindset'},
+];
+
+const processSteps = [
+  'Discover opportunities',
+  'Design with purpose',
+  'Build with precision',
+  'Deploy with confidence',
+  'Support the next stage',
+];
+
+const workSamples = [
+  {id: '01', title: 'Executive platform', text: 'A business-facing digital presence that reframed complex services into a confident, premium experience.'},
+  {id: '02', title: 'E-commerce concept', text: 'A product-led storefront pattern with clarity, trust cues and minimal friction across purchase journeys.'},
+  {id: '03', title: 'Operations dashboard', text: 'A streamlined internal tool for visibility, collaboration and decision-making across service delivery.'},
+];
+
+const trustPoints = [
+  'Senior-level thinking and commercial clarity',
+  'A premium visual language with measurable UX intent',
+  'Thoughtful execution that balances brand and performance',
+];
+
+function App() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const closeMenu = () => setMenuOpen(false);
+
+  const copyBrief = async () => {
+    const projectBrief = `Hello Tech & GUARD,\n\nMy name is: \nMy organisation: \nI need help with: \nProject details: \nPreferred contact: `;
+
+    try {
+      await navigator.clipboard.writeText(projectBrief);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <>
+      <a className="skip-link" href="#main">Skip to content</a>
+
+      <div className="site-shell">
+        <header className="site-header">
+          <div className="container header-inner">
+            <a className="brand" href="#top" onClick={closeMenu} aria-label="Tech and GUARD home">
+              <span className="brand-mark">T</span>
+              <span className="brand-text">
+                <strong>Tech &amp; GUARD</strong>
+              </span>
+            </a>
+
+            <nav className={`main-nav ${menuOpen ? 'is-open' : ''}`} aria-label="Main navigation">
+              {navItems.map((item) => (
+                <a key={item.href} href={item.href} onClick={closeMenu}>{item.label}</a>
+              ))}
+            </nav>
+
+            <button
+              type="button"
+              className="menu-toggle"
+              aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              {menuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          </div>
+        </header>
+
+        <main id="main">
+          <section id="top" className="hero">
+            <div className="hero-glow" aria-hidden="true" />
+            <div className="hero-grid" aria-hidden="true" />
+
+            <div className="container hero-inner">
+              <div className="hero-copy">
+                <div className="eyebrow">
+                  <span className="pulse" aria-hidden="true" />
+                  Digital strategy. Business clarity. Premium execution.
+                </div>
+
+                <h1>
+                  Technology built to feel as strong as your business looks.
+                </h1>
+
+                <p className="hero-lead">
+                  We design and build digital experiences for ambitious organisations that want clarity,
+                  confidence and performance without the noise.
+                </p>
+
+                <div className="hero-actions">
+                  <a className="btn btn-primary" href="#contact">
+                    Book a consultation
+                    <ArrowRight size={18} />
+                  </a>
+                  <a className="btn btn-secondary" href="#work">
+                    View our work
+                  </a>
+                </div>
+
+                <div className="stat-row" aria-label="Business metrics">
+                  {stats.map((stat) => (
+                    <div key={stat.label} className="stat-box">
+                      <strong>{stat.value}</strong>
+                      <span>{stat.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="hero-panel" aria-label="Key service overview">
+                <div className="panel-topbar">
+                  <span className="dot dot-1" />
+                  <span className="dot dot-2" />
+                  <span className="dot dot-3" />
+                </div>
+
+                <div className="panel-body">
+                  <div className="mini-label">Operating model</div>
+                  <h2>Trust. Tech. Delivered.</h2>
+
+                  <ul>
+                    <li>
+                      <ShieldCheck size={16} />
+                      Strategy and digital clarity
+                    </li>
+                    <li>
+                      <Code2 size={16} />
+                      Premium web and platform build
+                    </li>
+                    <li>
+                      <Layers3 size={16} />
+                      Scalable support and maintenance
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="statement container">
+            <span className="label">/ Our point of view</span>
+            <p>
+              Good technology does not distract from your business. It makes the complex feel simple,
+              the experience feel premium and the next step feel obvious.
+            </p>
+          </section>
+
+          <section id="services" className="section services">
+            <div className="container">
+              <div className="section-heading">
+                <div>
+                  <span className="label">01 / Expertise</span>
+                  <h2>Technology shaped around your growth.</h2>
+                </div>
+                <a href="#contact" className="text-link">
+                  Start a conversation
+                  <ArrowUpRight size={16} />
+                </a>
+              </div>
+
+              <div className="services-grid">
+                {services.map((service) => {
+                  const Icon = service.icon;
+
+                  return (
+                    <article className="service-card" key={service.title}>
+                      <div className="icon-wrap">
+                        <Icon size={22} />
+                      </div>
+                      <h3>{service.title}</h3>
+                      <p>{service.detail}</p>
+                      <div className="tag-list">
+                        {service.tags.map((tag) => (
+                          <span key={tag}>{tag}</span>
+                        ))}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          <section id="work" className="section work">
+            <div className="container">
+              <div className="section-heading">
+                <div>
+                  <span className="label">02 / Selected work</span>
+                  <h2>From concept to confident execution.</h2>
+                </div>
+              </div>
+
+              <div className="work-grid">
+                {workSamples.map((sample) => (
+                  <article className="work-card" key={sample.id}>
+                    <div className="work-header">
+                      <span>{sample.id}</span>
+                      <ArrowUpRight size={16} />
+                    </div>
+                    <h3>{sample.title}</h3>
+                    <p>{sample.text}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section id="process" className="section process">
+            <div className="container">
+              <div className="section-heading">
+                <div>
+                  <span className="label">03 / Approach</span>
+                  <h2>Simple steps. Serious outcomes.</h2>
+                </div>
+              </div>
+
+              <div className="process-grid">
+                {processSteps.map((step, index) => (
+                  <div className="process-step" key={step}>
+                    <span>{`0${index + 1}`}</span>
+                    <h3>{step}</h3>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section id="about" className="section about">
+            <div className="container about-grid">
+              <div>
+                <span className="label">04 / About us</span>
+                <h2>Technology with purpose.</h2>
+              </div>
+
+              <div className="about-copy">
+                <p>
+                  Tech &amp; GUARD exists to help organisations turn complexity into clarity. We combine
+                  strategy, UX and software craftsmanship to build digital systems that are trustworthy,
+                  usable and built for lasting value.
+                </p>
+
+                <ul className="trust-list">
+                  {trustPoints.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section id="contact" className="section contact">
+            <div className="container contact-inner">
+              <div className="contact-copy">
+                <span className="label">05 / Get in touch</span>
+                <h2>Have a problem worth solving?</h2>
+                <p>
+                  Start with a short conversation. We will help clarify the challenge, outcomes and the right
+                  next step for your business.
+                </p>
+              </div>
+
+              <div className="contact-card">
+                <button type="button" className="copy-button" onClick={copyBrief}>
+                  {copied ? 'Copied to clipboard' : 'Copy project brief'}
+                  <Send size={16} />
+                </button>
+                <a className="btn btn-primary" href="mailto:hello@techandguard.com">
+                  hello@techandguard.com
+                  <ArrowUpRight size={16} />
+                </a>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </>
+  );
+}
+
+createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+);
+
+export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
