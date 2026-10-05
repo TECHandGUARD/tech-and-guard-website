@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {createRoot} from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import {
   ArrowRight,
   ArrowUpRight,
@@ -29,12 +29,22 @@ type Service = {
   tags: string[];
 };
 
+type FormState = {
+  name: string;
+  email: string;
+  company: string;
+  project: string;
+  message: string;
+};
+
+type FormErrors = Partial<Record<keyof FormState, string>>;
+
 const navItems: NavItem[] = [
-  {label: 'Work', href: '#work'},
-  {label: 'Services', href: '#services'},
-  {label: 'Process', href: '#process'},
-  {label: 'About', href: '#about'},
-  {label: 'Contact', href: '#contact'},
+  { label: 'Work', href: '#work' },
+  { label: 'Services', href: '#services' },
+  { label: 'Process', href: '#process' },
+  { label: 'About', href: '#about' },
+  { label: 'Contact', href: '#contact' },
 ];
 
 const services: Service[] = [
@@ -42,38 +52,38 @@ const services: Service[] = [
     icon: Globe2,
     title: 'Premium web experiences',
     detail: 'Strategic business websites designed to sharpen trust, clarity and conversion from the very first scroll.',
-    tags: ['Brand strategy', 'UX design', 'Performance']
+    tags: ['Brand strategy', 'UX design', 'Performance'],
   },
   {
     icon: ShoppingBag,
     title: 'E-commerce systems',
     detail: 'Conversion-driven storefronts and digital commerce experiences built for clarity, confidence and measurable growth.',
-    tags: ['Shop UX', 'Checkout flow', 'Catalog design']
+    tags: ['Shop UX', 'Checkout flow', 'Catalog design'],
   },
   {
     icon: PanelsTopLeft,
     title: 'Custom platforms',
     detail: 'Purpose-built digital tools for teams that need more than off-the-shelf software and better control over outcomes.',
-    tags: ['Dashboards', 'Portals', 'Operations']
+    tags: ['Dashboards', 'Portals', 'Operations'],
   },
   {
     icon: Cloud,
     title: 'Cloud & support',
     detail: 'Deployment, maintenance and performance tuning that keeps your digital presence stable and trusted over time.',
-    tags: ['Hosting', 'Monitoring', 'Updates']
+    tags: ['Hosting', 'Monitoring', 'Updates'],
   },
   {
     icon: Headset,
     title: 'Technology consulting',
     detail: 'Clear advice on systems, technology decisions and digital investments aligned to business reality.',
-    tags: ['Planning', 'Systems', 'Roadmaps']
+    tags: ['Planning', 'Systems', 'Roadmaps'],
   },
 ];
 
 const stats = [
-  {value: '5+', label: 'delivery disciplines'},
-  {value: '100%', label: 'human-centred design'},
-  {value: '24/7', label: 'support mindset'},
+  { value: '5+', label: 'delivery disciplines' },
+  { value: '100%', label: 'human-centred design' },
+  { value: '24/7', label: 'support mindset' },
 ];
 
 const processSteps = [
@@ -85,9 +95,21 @@ const processSteps = [
 ];
 
 const workSamples = [
-  {id: '01', title: 'Executive platform', text: 'A business-facing digital presence that reframed complex services into a confident, premium experience.'},
-  {id: '02', title: 'E-commerce concept', text: 'A product-led storefront pattern with clarity, trust cues and minimal friction across purchase journeys.'},
-  {id: '03', title: 'Operations dashboard', text: 'A streamlined internal tool for visibility, collaboration and decision-making across service delivery.'},
+  {
+    id: '01',
+    title: 'Executive platform',
+    text: 'A business-facing digital presence that reframed complex services into a confident, premium experience.',
+  },
+  {
+    id: '02',
+    title: 'E-commerce concept',
+    text: 'A product-led storefront pattern with clarity, trust cues and minimal friction across purchase journeys.',
+  },
+  {
+    id: '03',
+    title: 'Operations dashboard',
+    text: 'A streamlined internal tool for visibility, collaboration and decision-making across service delivery.',
+  },
 ];
 
 const trustPoints = [
@@ -96,22 +118,61 @@ const trustPoints = [
   'Thoughtful execution that balances brand and performance',
 ];
 
+const defaultForm: FormState = {
+  name: '',
+  email: '',
+  company: '',
+  project: '',
+  message: '',
+};
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [formData, setFormData] = useState<FormState>(defaultForm);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [submitted, setSubmitted] = useState(false);
 
   const closeMenu = () => setMenuOpen(false);
 
-  const copyBrief = async () => {
-    const projectBrief = `Hello Tech & GUARD,\n\nMy name is: \nMy organisation: \nI need help with: \nProject details: \nPreferred contact: `;
+  const handleChange = (field: keyof FormState, value: string) => {
+    setFormData((current) => ({ ...current, [field]: value }));
+    setErrors((current) => ({ ...current, [field]: undefined }));
+  };
 
-    try {
-      await navigator.clipboard.writeText(projectBrief);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
+  const validateForm = () => {
+    const nextErrors: FormErrors = {};
+
+    if (!formData.name.trim()) nextErrors.name = 'Please enter your name.';
+    if (!formData.email.trim()) {
+      nextErrors.email = 'Please enter your email address.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      nextErrors.email = 'Please enter a valid email address.';
     }
+    if (!formData.project.trim()) nextErrors.project = 'Please tell us a little about your project.';
+    if (!formData.message.trim()) nextErrors.message = 'Please add a short project summary.';
+
+    return nextErrors;
+  };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const nextErrors = validateForm();
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      setSubmitted(false);
+      return;
+    }
+
+    const subject = encodeURIComponent(`New enquiry from ${formData.name}`);
+    const body = encodeURIComponent(
+      `Name: ${formData.name}\nEmail: ${formData.email}\nCompany: ${formData.company || 'Not provided'}\nProject: ${formData.project}\n\nMessage:\n${formData.message}`,
+    );
+
+    window.location.href = `mailto:hello@techandguard.com?subject=${subject}&body=${body}`;
+    setSubmitted(true);
+    setFormData(defaultForm);
+    setErrors({});
   };
 
   return (
@@ -158,9 +219,7 @@ function App() {
                   Digital strategy. Business clarity. Premium execution.
                 </div>
 
-                <h1>
-                  Technology built to feel as strong as your business looks.
-                </h1>
+                <h1>Technology built to feel as strong as your business looks.</h1>
 
                 <p className="hero-lead">
                   We design and build digital experiences for ambitious organisations that want clarity,
@@ -339,16 +398,66 @@ function App() {
                 </p>
               </div>
 
-              <div className="contact-card">
-                <button type="button" className="copy-button" onClick={copyBrief}>
-                  {copied ? 'Copied to clipboard' : 'Copy project brief'}
-                  <Send size={16} />
-                </button>
-                <a className="btn btn-primary" href="mailto:hello@techandguard.com">
-                  hello@techandguard.com
-                  <ArrowUpRight size={16} />
-                </a>
-              </div>
+              <form className="contact-form" onSubmit={handleSubmit} noValidate>
+                <div className="form-grid">
+                  <label>
+                    <span>Name</span>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(event) => handleChange('name', event.target.value)}
+                    />
+                    {errors.name && <small>{errors.name}</small>}
+                  </label>
+
+                  <label>
+                    <span>Email</span>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(event) => handleChange('email', event.target.value)}
+                    />
+                    {errors.email && <small>{errors.email}</small>}
+                  </label>
+
+                  <label>
+                    <span>Organisation</span>
+                    <input
+                      type="text"
+                      value={formData.company}
+                      onChange={(event) => handleChange('company', event.target.value)}
+                    />
+                  </label>
+
+                  <label>
+                    <span>Project type</span>
+                    <input
+                      type="text"
+                      value={formData.project}
+                      onChange={(event) => handleChange('project', event.target.value)}
+                    />
+                    {errors.project && <small>{errors.project}</small>}
+                  </label>
+                </div>
+
+                <label>
+                  <span>Project details</span>
+                  <textarea
+                    rows={5}
+                    value={formData.message}
+                    onChange={(event) => handleChange('message', event.target.value)}
+                  />
+                  {errors.message && <small>{errors.message}</small>}
+                </label>
+
+                <div className="form-actions">
+                  <button type="submit" className="btn btn-primary">
+                    Send enquiry
+                    <Send size={16} />
+                  </button>
+                  {submitted && <span className="success-message">Your email app is opening with your enquiry.</span>}
+                </div>
+              </form>
             </div>
           </section>
         </main>
@@ -364,474 +473,3 @@ createRoot(document.getElementById('root')!).render(
 );
 
 export default App;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
