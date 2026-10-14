@@ -9,16 +9,16 @@ npm install
 npm run dev
 ```
 
-Run `npm run build` to check types and create a static production build in `dist/`. Deploy `dist/` to a static host; no backend is required for this version.
+Run `npm run build` to check types and create a static production build in `dist/`. Deploy `dist/` to a static host. The public catalogue and protected administrator tools connect to the corporate Supabase project.
 
 ## Before publishing
 
 - Confirm the descriptions and status of SmartBridge FET and the store with the company.
-- Add an approved contact address and connect a real enquiry endpoint before promising form submissions. The current contact action copies a project brief for the visitor.
+- Add an approved contact address and connect a real enquiry endpoint before promising form submissions. The contact form opens the visitor’s email app with their project brief; it does not send or store enquiries automatically.
 - Confirm trademark, company and project details; replace abstract CSS project art with approved screenshots when available.
 - Configure your domain, HTTPS and security headers at the hosting provider.
 
-This site contains no customer data collection, analytics scripts or secrets.
+The public site has no analytics scripts or secret keys. Enquiry drafts stay on the visitor’s device until they send their email. Store administrator authentication and private uploads use Supabase.
 
 ## Independent store imports
 
@@ -31,4 +31,4 @@ The catalogue and private uploads use the existing TECHandGUARD Supabase project
 - Admin sign-in uses existing Supabase Auth accounts. No account is automatically promoted. An operator must verify the owner's account and add its ID to `corporate_private.store_admins` before admin sign-in is usable. Never use user-editable metadata to grant admin access.
 - Access tokens stay in memory, not local storage. Reload or expiry requires sign-in again.
 
-Validation: production build; CSV variant/price/error tests; malformed ZIP tests; hosted transactional checks for administrator import, draft isolation, publication and anonymous-write denial. Hosted test records were rolled back. Browser interaction QA and theme adaptation await the next release/files.
+Validation: production build; CSV variant/price/error tests; malformed ZIP tests; hosted transactional checks for administrator import, draft isolation, publication and anonymous-write denial. Hosted test records were rolled back. The private review contains six public pages plus a protected store administrator page. Theme adaptation awaits approved reference files.
