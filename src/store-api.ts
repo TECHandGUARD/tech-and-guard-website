@@ -1,5 +1,5 @@
 export const STORE_URL='https://vthjdkwfvbfryofsmtdb.supabase.co';
-const PUBLIC_KEY='sb_publishable_y__5ddJ5fQo0bdGnQtqgTg_kn6G5Hap';
+export const PUBLIC_KEY='sb_publishable_y__5ddJ5fQo0bdGnQtqgTg_kn6G5Hap';
 let accessToken='';
 export function setStoreToken(value:string){accessToken=value;}
 export async function storeRequest(path:string,options:RequestInit={}){
