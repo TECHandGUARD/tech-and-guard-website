@@ -1,25 +1,34 @@
-# Tech & Guard corporate website
+# Tech & GUARD corporate website
 
-Responsive React, TypeScript and Vite portfolio.
+A responsive React, TypeScript and Vite website for Tech & GUARD (Pty) Ltd.
 
-## Development
+## Run locally
 
-Run `npm ci` then `npm run dev`. Run `npm run build` to check types and create `dist/`.
+```bash
+npm install
+npm run dev
+```
 
-## Implemented
+Run `npm run build` to check types and create a static production build in `dist/`. Deploy `dist/` to a static host; no backend is required for this version.
 
-- Portfolio, services and process sections.
-- Direct navigation to live SmartBridge FET.
-- Independent on-site store section, with an explicit empty catalogue.
-- Email enquiries through `mailto:aneleq@techandguard.co.za`; this opens the visitor's email app and does not submit a server form.
-- Registered operator: TECH AND GUARD (Pty) Ltd, 2026/155090/07.
+## Before publishing
 
-## Needed before launch
+- Confirm the descriptions and status of SmartBridge FET and the store with the company.
+- Add an approved contact address and connect a real enquiry endpoint before promising form submissions. The current contact action copies a project brief for the visitor.
+- Confirm trademark, company and project details; replace abstract CSS project art with approved screenshots when available.
+- Configure your domain, HTTPS and security headers at the hosting provider.
 
-- Product names, real prices, photos, stock and delivery rules to implement a purchasable store.
-- Product/order administration and server-side order handling.
-- Yoco setup remains pending; no card payments are claimed.
-- Hosting and domain mapping. Existing domain/DNS and Shopify services have not been modified.
-- Confirm business enquiry inbox is monitored. Automated enquiry submission is not implemented.
+This site contains no customer data collection, analytics scripts or secrets.
 
-The build succeeds. No customer data collection, analytics or credentials are included.
+## Independent store imports
+
+The catalogue and private uploads use the existing TECHandGUARD Supabase project (`vthjdkwfvbfryofsmtdb`), in dedicated corporate tables. SmartBridge's active project is not used. The public browser key is publishable, and row-level security protects write access.
+
+- CSV supports Shopify variants and a simple Title/SKU/Price/Stock/Image URL format. Up to 5 MB and 2,000 variants. A validation preview blocks invalid imports. Saving is atomic, keyed by SKU, preserves unlisted products, and returns imported variants to draft.
+- Administrators review each draft and publish or unpublish it. Visitors only see published products.
+- Product enquiries use a cart and open the visitor's email app. No payment, order submission, tax or delivery quote is claimed.
+- Shopify ZIPs up to 20 MB are checked for archive structure, unsafe paths and expansion limits, then stored in a private bucket. This is a reference upload, not an automatic theme installer.
+- Admin sign-in uses existing Supabase Auth accounts. No account is automatically promoted. An operator must verify the owner's account and add its ID to `corporate_private.store_admins` before admin sign-in is usable. Never use user-editable metadata to grant admin access.
+- Access tokens stay in memory, not local storage. Reload or expiry requires sign-in again.
+
+Validation: production build; CSV variant/price/error tests; malformed ZIP tests; hosted transactional checks for administrator import, draft isolation, publication and anonymous-write denial. Hosted test records were rolled back. Browser interaction QA and theme adaptation await the next release/files.
