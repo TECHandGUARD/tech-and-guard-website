@@ -32,3 +32,7 @@ The catalogue and private uploads use the existing TECHandGUARD Supabase project
 - Access tokens stay in memory, not local storage. Reload or expiry requires sign-in again.
 
 Validation: production build; CSV variant/price/error tests; malformed ZIP tests; hosted transactional checks for administrator import, draft isolation, publication and anonymous-write denial. Hosted test records were rolled back. The private review contains six public pages plus a protected store administrator page. Theme adaptation awaits approved reference files.
+
+## Executive review
+
+See `docs/executive-review-20261014.md` for the CMO, CIO and CEO assessment, implemented improvements and remaining launch decisions. Run `node --experimental-strip-types --test tests/*.test.mjs` for import and API regression checks.
