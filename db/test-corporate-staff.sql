@@ -1,0 +1,30 @@
+begin;
+insert into auth.users(id,email,email_confirmed_at,raw_app_meta_data,raw_user_meta_data) values(gen_random_uuid(),'owner-fixture@example.invalid',now(),'{}','{}'),(gen_random_uuid(),'staff-fixture@example.invalid',now(),'{}','{}'),(gen_random_uuid(),'unverified-fixture@example.invalid',null,'{}','{}');
+insert into corporate_private.staff_grants(email,staff_role) values('owner-fixture@example.invalid','owner');
+select set_config('request.jwt.claim.sub',(select id::text from auth.users where email='owner-fixture@example.invalid'),true);
+set local role authenticated;
+do $$begin
+ if public.corporate_staff_role()<>'owner' or not public.corporate_is_admin() then raise exception 'Owner access failed';end if;
+ begin perform public.corporate_set_staff('unverified-fixture@example.invalid',true);raise exception 'Unverified assignment allowed';exception when others then if sqlerrm<>'Staff must register and verify their email first' then raise;end if;end;
+ begin perform public.corporate_set_staff('owner-fixture@example.invalid',false);raise exception 'Owner removal allowed';exception when others then if sqlerrm<>'Owner accounts cannot be changed by staff assignment' then raise;end if;end;
+ perform public.corporate_set_staff('staff-fixture@example.invalid',true);
+end;$$;
+reset role;
+select set_config('request.jwt.claim.sub',(select id::text from auth.users where email='staff-fixture@example.invalid'),true);
+set local role authenticated;
+do $$begin
+ if public.corporate_staff_role()<>'staff' or not public.corporate_is_admin() then raise exception 'Staff access failed';end if;
+ begin perform public.corporate_set_staff('owner-fixture@example.invalid',false);raise exception 'Staff escalation allowed';exception when others then if sqlerrm<>'Owner administrator required' then raise;end if;end;
+ begin perform public.corporate_list_staff();raise exception 'Staff listing allowed';exception when others then if sqlerrm<>'Owner administrator required' then raise;end if;end;
+end;$$;
+reset role;
+select set_config('request.jwt.claim.sub',(select id::text from auth.users where email='owner-fixture@example.invalid'),true);
+set local role authenticated;
+select public.corporate_set_staff('staff-fixture@example.invalid',false);
+reset role;
+select set_config('request.jwt.claim.sub',(select id::text from auth.users where email='staff-fixture@example.invalid'),true);
+set local role authenticated;
+do $$begin if public.corporate_is_admin() then raise exception 'Revoked access retained';end if;end;$$;
+reset role;
+do $$begin if has_function_privilege('anon','public.corporate_set_staff(text,boolean)','execute') or has_table_privilege('authenticated','corporate_private.staff_grants','select') then raise exception 'Permission exposure';end if;end;$$;
+rollback;
