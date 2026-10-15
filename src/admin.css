@@ -25,3 +25,7 @@
 
 .admin-sidebar .planned-toggle{color:#b7c0b2;font-size:11px;font-weight:400}.admin-sidebar .planned-toggle input{min-height:14px;padding:0;border:0;box-shadow:none;cursor:pointer}
 @media(max-width:760px){.admin-density-control,.admin-mobile-menu{min-width:44px;min-height:44px}.admin-group-toggle{min-height:44px}}
+/* Keep small operational text readable on the warm surfaces. */
+.admin-heading-description,.admin-app .store-panel p,.admin-app .admin-page-description,.admin-stat small,.admin-app .sku,.admin-quick-actions small,.admin-definition dt,.admin-callout p,.admin-workspace-footer,.admin-workspace-footer span:first-child,.admin-breadcrumb,.admin-collapse-control,.admin-density-control,.admin-login-brand p,.admin-login-page .store-panel p{color:#65735a}
+.admin-content input::placeholder,.admin-content textarea::placeholder,.admin-login-page input::placeholder{color:#65735a}
+.admin-app .store-table th{color:#637255}.admin-eyebrow,.admin-login-brand .label{color:#7c6138}
