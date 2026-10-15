@@ -1,0 +1,40 @@
+begin;
+insert into auth.users(id,email,email_confirmed_at,raw_app_meta_data,raw_user_meta_data) values(gen_random_uuid(),'admin-view-owner-fixture@example.invalid',now(),'{}','{}'),(gen_random_uuid(),'admin-view-staff-fixture@example.invalid',now(),'{}','{}'),(gen_random_uuid(),'admin-view-buyer-fixture@example.invalid',now(),'{}','{}');
+insert into corporate_private.staff_grants(email,staff_role) values('admin-view-owner-fixture@example.invalid','owner'),('admin-view-staff-fixture@example.invalid','staff');
+insert into public.corporate_products(sku,title,price_cents,stock) values('__tg_admin_view_a','Admin fixture A',100,3),('__tg_admin_view_b','Admin fixture B',100,5);
+insert into corporate_private.store_events(actor,event_type,subject,details) select id,'product_edited','__tg_admin_view_a','{}'::jsonb from auth.users where email='admin-view-owner-fixture@example.invalid';
+select set_config('request.jwt.claim.sub',(select id::text from auth.users where email='admin-view-owner-fixture@example.invalid'),true);
+set local role authenticated;
+do $$declare data jsonb;begin
+ data:=public.corporate_inventory_history(null,0);
+ if not exists(select 1 from jsonb_array_elements(data) e where e->>'sku'='__tg_admin_view_a') then raise exception 'Global stock history missing A';end if;
+ if not exists(select 1 from jsonb_array_elements(data) e where e->>'sku'='__tg_admin_view_b') then raise exception 'Global stock history missing B';end if;
+ data:=public.corporate_inventory_history('__tg_admin_view_a',0);
+ if jsonb_array_length(data)<>1 then raise exception 'Product filtering failed';end if;
+ if public.corporate_inventory_history('__tg_admin_view_a',50)<>'[]'::jsonb then raise exception 'Pagination failed';end if;
+ data:=public.corporate_admin_events(0);
+ if not exists(select 1 from jsonb_array_elements(data) e where e->>'subject'='__tg_admin_view_a' and e->>'actor_label'='admin-view-owner-fixture@example.invalid') then raise exception 'Owner audit missing';end if;
+ begin perform public.corporate_inventory_history(null,-1);raise exception 'Negative offset accepted';exception when others then if sqlerrm<>'invalid_adjustment' then raise;end if;end;
+end;$$;
+reset role;
+select set_config('request.jwt.claim.sub',(select id::text from auth.users where email='admin-view-staff-fixture@example.invalid'),true);
+set local role authenticated;
+do $$begin
+ if jsonb_array_length(public.corporate_inventory_history('__tg_admin_view_a',0))<>1 then raise exception 'Staff history missing';end if;
+ begin perform public.corporate_admin_events(0);raise exception 'Staff can read owner audit';exception when others then if sqlerrm<>'Owner administrator required' then raise;end if;end;
+ begin select 1 from corporate_private.stock_movements;raise exception 'Direct history read allowed';exception when insufficient_privilege then null;end;
+end;$$;
+reset role;
+select set_config('request.jwt.claim.sub',(select id::text from auth.users where email='admin-view-buyer-fixture@example.invalid'),true);
+set local role authenticated;
+do $$begin
+ begin perform public.corporate_inventory_history(null,0);raise exception 'Buyer can read stock audit';exception when others then if sqlerrm<>'Store administrator required' then raise;end if;end;
+ begin perform public.corporate_admin_events(0);raise exception 'Buyer can read owner audit';exception when others then if sqlerrm<>'Owner administrator required' then raise;end if;end;
+end;$$;
+reset role;
+select set_config('request.jwt.claim.sub','',true);
+set local role anon;
+do $$begin begin perform public.corporate_inventory_history(null,0);raise exception 'Anonymous history read accepted';exception when insufficient_privilege then null;end;end;$$;
+reset role;
+select 'admin history filters, pagination and owner/staff/customer access passed' as result;
+rollback;

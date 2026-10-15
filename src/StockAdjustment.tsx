@@ -4,9 +4,10 @@ import {storeRequest,StoreRejection} from './store-api';
 import {adjustmentReasons,adjustmentStock,AdjustmentReason} from './inventory-adjustment';
 type Movement={id:string;old_stock:number|null;new_stock:number|null;reason:string;note:string;actor_label:string;created_at:string};
 type Attempt={product_sku:string;adjustment_reason:AdjustmentReason;quantity:number;adjustment_note:string;expected_updated_at:string;request_key:string};
-export function StockAdjustment({product,refresh,close}:{product:Product;refresh:()=>Promise<void>;close:()=>void}){
+export function StockAdjustment({product,refresh,close,onLockChange}:{product:Product;refresh:()=>Promise<void>;close:()=>void;onLockChange?:(locked:boolean)=>void}){
  const [reason,setReason]=useState<AdjustmentReason>('received'),[quantity,setQuantity]=useState(''),[note,setNote]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[pending,setPending]=useState(false),[saved,setSaved]=useState(false);
  const attempt=useRef<Attempt|null>(null),submitting=useRef(false);
+ useEffect(()=>{onLockChange?.(busy||pending);return()=>onLockChange?.(false);},[busy,pending,onLockChange]);
  let preview:string;try{preview=String(adjustmentStock(product.stock,reason,quantity).next);}catch{preview='—';}
  const save=async(e:React.FormEvent)=>{e.preventDefault();if(submitting.current||saved)return;submitting.current=true;setBusy(true);setMessage('');let confirmed=false;
  try{
