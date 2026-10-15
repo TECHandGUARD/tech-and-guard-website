@@ -1,34 +1,38 @@
-# Corporate administrator and domain rollout
+# Corporate rollout — 15 October 2026
 
-The two user-approved owner email grants are in the private database, not in public source or browser configuration. One verified account is active; the second is reserved pending account registration and email verification. Owners assign/revoke staff through database-guarded RPCs. Staff can use existing product/theme management permissions, but cannot assign roles, view the staff roster or modify owners. No arbitrary account passwords can be read/set by another staff user.
+Supersedes earlier private-review/www-only notes. Corporate Supabase: `vthjdkwfvbfryofsmtdb`; SmartBridge is separate and unchanged.
 
-Account controls use pinned Supabase JS 2.117.3 with memory-only sessions. Account holders register, verify email, request recovery links and set/change their own password. Recovery clears URL token material; password completion signs out. The administration bundle is lazy-loaded to keep public pages light. Existing DB grants are checked on operations so staff revocation applies to subsequent requests.
+The site is public. `techandguard.co.za` and its HTTPS are active according to the hosting provider. The current host is ChatGPT Sites. The React/Vite code does not use ChatGPT visitor authentication or an OpenAI inference API and can be deployed as `dist/` to another static host.
 
-Sixteen supplied CSV products are now saved as unpublished drafts through the existing atomic importer under the user-approved owner account, as a service-assisted import. Prices, stock and primary image URLs retained; omitted columns remain in original CSV. Products are not public, and ratings/variant lists are not invented.
+All 16 supplied CSV products are published for enquiries. Prices and descriptions are supplied data, not independently verified manufacturer claims. Generated product images and unverified review counts are not displayed. Confirm model, stock and delivery before payment. No checkout or automatic order placement exists.
 
-## Hosted Auth settings still required
+## Required Supabase Auth settings
 
-Corporate project: `vthjdkwfvbfryofsmtdb` → Authentication → URL Configuration.
+- Site URL: `https://techandguard.co.za`.
+- Redirects: `https://techandguard.co.za/admin/`, `https://www.techandguard.co.za/admin/`, `https://tech-guard-corporate-review.asandaapril0642.chatgpt.site/admin/` while current hosting remains.
+- Keep email confirmation enabled.
+- SMTP host `smtp.resend.com`, port `465`, username `resend`.
+- From `no-reply@auth.techandguard.co.za`, sender name `Tech & Guard`.
+- SMTP password: server-side Resend sending API key, entered securely in the dashboard. Never put it in frontend code, Git or chat.
+- Verify actual confirmation/recovery delivery and owner/staff workflows. No emails sent by the agent.
 
-- Site URL for public launch: `https://www.techandguard.co.za`.
-- Additional redirect URLs: `https://www.techandguard.co.za/admin/` and `https://tech-guard-corporate-review.asandaapril0642.chatgpt.site/admin/`.
-- Verify email confirmation enabled and actual signup/reset email delivery. Configure a verified custom SMTP sender if the default sender does not deliver to both owner accounts.
-- Test recovery and registration in the browser before claiming working email delivery. No recovery email was sent by the agent.
+The dashboard requires user sign-in. The connector cannot read/change these Auth settings. Public settings show signup enabled and confirmation required. A recent signup request logged HTTP 200, but no second owner account exists; the exact failed user attempt is not identified.
 
-Current review sharing remains owner-private. Connecting a domain does not make the review publicly accessible. Public audience must be explicitly selected for the customer launch.
+## Resend DNS
 
-## GoDaddy DNS records for www
+Dedicated sending-only domain `auth.techandguard.co.za` was created. Four records were saved in GoDaddy, leaving existing corporate mail records unchanged. Verification was started and last reported pending:
 
-Registered custom hostname: `www.techandguard.co.za`; host reports pending DNS verification/SSL.
-
-| Type | GoDaddy Name | Value |
+| Type | Name | Value |
 |---|---|---|
-| CNAME | www | custom-domains.chatgpt.site |
-| TXT | _openai-site-verification.www | openai-site-verification=ZrX3L09_XYJt5qnuNqAe3WI74lOnrOhY61xAXZVx5Qg |
-| TXT | _cf-custom-hostname.www | 178920af-7bd1-4abb-8780-1495bcb2ed54 |
+| TXT | resend._domainkey.auth | p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCeyaOI/ByT90UApvDRC6fA2K2lVnDa4T17typ2L7yY5nNws7JGgEAeJoDoK4MHzcYc36pU6cmMWPgAs3CJos0Mb0eQYusmc8CJf/CYK9vp2vEdWtpKjKg/LbBpFJmjnUdme1tsx26E0VC5DtBQzgarzW5J/eN8zTuGfmZvzspPfwIDAQAB |
+| MX | send.auth | feedback-smtp.eu-west-1.amazonses.com, priority 10 |
+| TXT | send.auth | v=spf1 include:amazonses.com ~all |
+| CNAME | rsend.auth | send.forge.rmta.net |
 
-Replace conflicting `www` Shopify CNAME/forwarding only when entering the approved new records. Preserve MX, SPF, DKIM and other email/DNS records. Apex `techandguard.co.za` is not connected in this change; plan its HTTPS redirect to www separately. Recheck host DNS and SSL status after saving, then verify live URLs.
+Verified DNS alone does not configure Supabase SMTP.
 
-## Verification and limits
+## Hosting portability
 
-Production/type build; ten existing import/API tests; transactional hosted owner/staff tests including verified access, unverified assignment denial, owner-removal denial, staff escalation/list denial and revocation. Fixture rows rolled back. Advisors run: new private membership table has RLS and no direct browser policies intentionally; legacy unrelated tables were not altered. Browser, DNS and outbound Auth delivery are not yet verified. No paid services, live payments or SmartBridge changes.
+`amplify.yml` selects Node 24, runs tests and builds `dist/`. `customHttp.yml` specifies HTTP security headers using documented Amplify syntax. These headers only become effective on an actual Amplify deployment and need response verification. HTML metadata includes restrictive CSP/no-referrer; frame denial requires a response header.
+
+No corporate Amplify app was found in enabled regions where listing succeeded; af-south-1 endpoint was unavailable. Existing SmartBridge apps were unchanged. Confirm hosting costs before creating a separate corporate app, connect the exact GitHub repository, verify deployment/Auth/headers, then change domain DNS. No AWS migration or cutover happened.
