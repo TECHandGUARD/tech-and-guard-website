@@ -34,3 +34,11 @@ Stock adjustment navigation is locked while a submission is pending or uncertain
 Validation: TypeScript/production build, 31 automated tests, component server-render smoke check, transactional hosted tests of global/per-product history, pagination and owner/staff/customer/anonymous denial. Fixtures rolled back. Browser interaction/visual QA remains unverified because the supported browser-control skill is unavailable. The supplied photos establish the visual direction; no pixel-perfect claim is made.
 
 Publishing uses GitHub main -> existing AWS Amplify app `d1406asizz97c4` in eu-west-1. Do not publish this change to ChatGPT Sites or create another hosting app. Custom-domain cutover remains separate.
+
+## Visual and usability refinement
+
+The workspace now uses warm ivory surfaces, a deep green-charcoal sidebar and restrained bronze actions. Typography, numeric alignment, spacing, table borders/headers and empty states share one visual system. Comfortable and compact density controls adjust table spacing. Desktop sidebar collapse, collapsible navigation groups, searchable sections and Ctrl/Command+K reduce navigation effort. On small screens the drawer, larger touch targets and horizontal table scrolling preserve access to the same operations. Planned business tools remain labelled; they can still be shown or hidden explicitly.
+
+Focus moves to the product-name field when editing and to the stock-adjustment heading when opening a movement. Destructive cancellation receives a separate visual treatment and retains its existing confirmation step. Focus rings and reduced-motion support are included. No new database access, third-party fonts, image assets, libraries, payment behaviour or role rules were added.
+
+Validation: 31 existing automated tests pass, production/type build passes and server rendering of the actual dashboard components succeeds. Browser visual and interaction verification remains outstanding. This is a design/usability refinement, not completion of the planned commerce modules.
