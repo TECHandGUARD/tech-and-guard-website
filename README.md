@@ -26,7 +26,7 @@ The catalogue and private uploads use the existing TECHandGUARD Supabase project
 
 - CSV supports Shopify variants and a simple Title/SKU/Price/Stock/Image URL format. Up to 5 MB and 2,000 variants. A validation preview blocks invalid imports. Saving is atomic, keyed by SKU, preserves unlisted products, and returns imported variants to draft.
 - Administrators review each draft and publish or unpublish it. Visitors only see published products.
-- Product enquiries use a cart and open the visitor's email app. No payment, order submission, tax or delivery quote is claimed.
+- Product enquiries use a cart and open the visitor's email app. Verified customers can also save unpaid requests with server-priced snapshots. No payment, inventory reservation, automatic email, tax or delivery quote is claimed.
 - Shopify ZIPs up to 20 MB are checked for archive structure, unsafe paths and expansion limits, then stored in a private bucket. This is a reference upload, not an automatic theme installer.
 - Admin sign-in uses existing Supabase Auth accounts. No account is automatically promoted. Owner grants are recorded in private `corporate_private.staff_grants`; the account email must be verified before access is usable. Owner administrators can assign and revoke verified staff from the admin page. Never use user-editable metadata to grant admin access.
 - Access tokens stay in memory, not local storage. Reload requires sign-in again; the Auth client refreshes an active memory session. Account registration/recovery requires configured Auth email delivery and redirect URLs.
@@ -40,3 +40,5 @@ See `docs/executive-review-20261014.md` for the CMO, CIO and CEO assessment, imp
 See `docs/admin-domain-rollout-20261015.md` for the owner/staff controls, catalogue status and GoDaddy/Supabase configuration.
 
 See `docs/mvp-readiness-20261015.md` for verified state, unresolved production blockers, and the portable AWS deployment configuration.
+
+The protected `/account/` page shows customer requests; the `/admin/` dashboard manages inventory and request review. Run `db/test-corporate-orders.sql` transactionally after applying corporate migrations to verify workflow and access rules. Request submission is not a completed purchase.

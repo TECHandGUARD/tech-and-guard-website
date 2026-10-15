@@ -18,7 +18,7 @@ Known Auth error codes now give actionable sender/rate-limit/verification messag
 
 Migration `20261015002140_corporate_trigger_hardening.sql` fixes the legacy timestamp trigger's mutable search_path. Private RLS tables without direct browser policies intentionally deny access. Legacy unrelated tables were not opened. Leaked-password protection is reported disabled; check Free-plan availability before changing it and do not upgrade. MFA, bot protection, monitoring/alert ownership and tested restore procedures remain hardening tasks.
 
-The dashboard requires secure login to configure SMTP and redirects. Dedicated Resend domain DNS is saved; verification and actual delivery are not complete. A recent signup log returned 200, but no second owner account exists; the exact failed attempt remains unidentified. Do not bypass email confirmation.
+The dashboard requires secure login to configure SMTP and redirects. Dedicated Resend domain DNS is saved; domain verification passed; actual delivery is not complete. A recent signup log returned 200, but no second owner account exists; the exact failed attempt remains unidentified. Do not bypass email confirmation.
 
 No corporate Amplify app is deployed. Portable build/header files are ready; provider migration and production DNS cutover are still outstanding.
 
@@ -40,3 +40,15 @@ Revenue launch needs successful checkout, verified webhooks, idempotent orders, 
 Evidence: production/type build and 12 tests pass; public REST catalogue returns 16 rows; hosting reports apex HTTPS active. Owner/staff transactional checks are replayed in this change. Direct deployed-site HTTP checks from this execution environment returned 403, which does not establish a visitor-facing failure. Browser QA, email onboarding and paid checkout remain unverified. No real payment, paid upgrade or SmartBridge mutation.
 
 References: https://supabase.com/docs/guides/auth/auth-smtp ; https://docs.aws.amazon.com/amplify/latest/userguide/custom-headers.html ; https://docs.aws.amazon.com/amplify/latest/userguide/yml-specification-syntax.html
+
+## Operations follow-up — 15 October 2026
+
+The claim that the live site must be the older portfolio because PR #2 is unmerged was incorrect. The hosting service independently deployed saved version 10 from source commit d765963e8739caa4240ab4a04bb9da1babdad726; GitHub PR #2 contained the same work under its own commit history. Main is separate from the deployed Sites source.
+
+Implemented next: dashboard sections for overview, products/stock, requests, imports/theme, team and account. Staff can edit product titles, descriptions, prices and stock with database validation and optimistic concurrency. Owners retain exclusive staff assignment. Customer account route is /account/; customers can see their own latest 20 requests. Admin sees latest 100 with review/cancellation controls and manual refresh. These limits are shown in the UI. There are no fabricated sales/revenue metrics.
+
+Migration 20261015051354_corporate_order_requests.sql adds private-by-default order requests and staff audit events. Verified accounts submit 1–25 distinct product lines with integer quantities 1–99, priced against published database products. Requests reject insufficient listed stock. Unknown stock remains subject to confirmation. They do not reserve stock, charge cards or trigger email. Five new requests per account per 24 hours; per-account advisory locks serialize concurrent checks. Per-user UUID keys make identical retries idempotent; altered retry payloads are rejected. Product price snapshots persist after catalogue edits. Customer/staff data is isolated with RLS. All mutations use guarded RPCs; private functions have fixed empty search_path and no PUBLIC/anon execution. No direct browser insert/update grants on orders.
+
+Acceptance evidence: production/type build and 14 unit/API tests; hosted transactional order/security suite covering price tampering, retries, altered retries, hidden products, stock/quantity/duplicate checks, daily limit, cross-customer privacy, unverified denial, unauthorised staff actions, stale edits, prohibited paid status and auditing. Test users, products and orders rolled back; zero fixtures left. Existing staff security suite remains applicable. Browser and email delivery tests are still blocked/unverified.
+
+Before onboarding: add exact /account/ and /admin/ redirects for apex and www, connect verified Resend SMTP securely, and test signup/reset. Before a Shopify replacement claim: corporate gateway credentials, server-verified payment webhooks, payment/order idempotency, real inventory reservation, final shipping/VAT/returns rules and end-to-end browser tests are still required. No Base44 changes, paid resources/upgrades, AWS cutover, live payment or automatic emails were made.

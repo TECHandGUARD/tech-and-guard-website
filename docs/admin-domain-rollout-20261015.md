@@ -4,12 +4,12 @@ Supersedes earlier private-review/www-only notes. Corporate Supabase: `vthjdkwfv
 
 The site is public. `techandguard.co.za` and its HTTPS are active according to the hosting provider. The current host is ChatGPT Sites. The React/Vite code does not use ChatGPT visitor authentication or an OpenAI inference API and can be deployed as `dist/` to another static host.
 
-All 16 supplied CSV products are published for enquiries. Prices and descriptions are supplied data, not independently verified manufacturer claims. Generated product images and unverified review counts are not displayed. Confirm model, stock and delivery before payment. No checkout or automatic order placement exists.
+All 16 supplied CSV products are published for enquiries. Stored order requests now support verified customers and staff review. Prices and descriptions are supplied data, not independently verified manufacturer claims. Generated product images and unverified review counts are not displayed. Confirm model, stock and delivery before payment. No payment checkout exists. An unpaid order request is now stored by the database with server-priced product snapshots.
 
 ## Required Supabase Auth settings
 
 - Site URL: `https://techandguard.co.za`.
-- Redirects: `https://techandguard.co.za/admin/`, `https://www.techandguard.co.za/admin/`, `https://tech-guard-corporate-review.asandaapril0642.chatgpt.site/admin/` while current hosting remains.
+- Redirects: `https://techandguard.co.za/admin/`, `https://techandguard.co.za/account/`, `https://www.techandguard.co.za/account/`, `https://www.techandguard.co.za/admin/`, `https://tech-guard-corporate-review.asandaapril0642.chatgpt.site/admin/` while current hosting remains.
 - Keep email confirmation enabled.
 - SMTP host `smtp.resend.com`, port `465`, username `resend`.
 - From `no-reply@auth.techandguard.co.za`, sender name `Tech & Guard`.
@@ -20,7 +20,7 @@ The dashboard requires user sign-in. The connector cannot read/change these Auth
 
 ## Resend DNS
 
-Dedicated sending-only domain `auth.techandguard.co.za` was created. Four records were saved in GoDaddy, leaving existing corporate mail records unchanged. Verification was started and last reported pending:
+Dedicated sending-only domain `auth.techandguard.co.za` was created. Four records were saved in GoDaddy, leaving existing corporate mail records unchanged. All four records and the sending domain were verified by Resend on 15 October 2026:
 
 | Type | Name | Value |
 |---|---|---|
