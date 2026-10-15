@@ -1,10 +1,11 @@
 import {useEffect,useState} from 'react';
+import {authFetch} from './auth-fetch';
 import {authErrorMessage} from './auth-errors';
 import {cleanAuthLink,inspectAuthLink} from './auth-links';
 import {createClient} from '@supabase/supabase-js';
 import {STORE_URL,PUBLIC_KEY,setStoreToken,storeRequest} from './store-api';
 const incomingLink=inspectAuthLink(window.location.href);
-export const corporateAuth=createClient(STORE_URL,PUBLIC_KEY,{auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:true}});
+export const corporateAuth=createClient(STORE_URL,PUBLIC_KEY,{global:{fetch:authFetch},auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:true}});
 corporateAuth.auth.onAuthStateChange((_event,session)=>{setStoreToken(session?.access_token||'');});
 export function AccountControls({signedIn=false,returnPath='/admin/'}:{signedIn?:boolean;returnPath?:'/admin/'|'/store/'|'/account/'}){
  const [recovery,setRecovery]=useState(false),[hasSession,setHasSession]=useState(false),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[confirm,setConfirm]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(incomingLink.message),[cooldown,setCooldown]=useState(0);

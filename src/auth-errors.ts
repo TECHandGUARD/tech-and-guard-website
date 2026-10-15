@@ -1,5 +1,6 @@
 export function authErrorMessage(error: {code?:string;status?:number}, action:'signup'|'reset'|'password'|'login'){
  const code=error.code;
+ if(error.status===0)return 'The account service could not be reached or timed out. Check your connection and try again.';
  if(code==='email_address_not_authorized'||code==='email_address_not_allowed')return 'Account email delivery is unavailable. Please contact aneleq@techandguard.co.za; repeated attempts will not fix the sender configuration.';
  if(code==='over_email_send_rate_limit'||code==='over_request_rate_limit'||error.status===429)return 'Too many attempts. Please wait before trying again.';
  if(code==='signup_disabled')return 'Account registration is currently disabled. Please contact the administrator.';
