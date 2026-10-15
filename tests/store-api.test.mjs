@@ -27,3 +27,15 @@ test('cancelled requests are bounded and release their timers',async()=>{
  globalThis.fetch=async(url,options)=>{assert.ok(options.signal.aborted);throw new DOMException('Aborted','AbortError');};
  const controller=new AbortController();controller.abort();await assert.rejects(()=>storeRequest('/rest/v1/test',{signal:controller.signal}),/cancelled/);
 });
+test('only a recognised database rejection is safe to correct with a new submission key',async()=>{
+ const {StoreRejection}=await import('../src/store-api.ts');
+ globalThis.fetch=async()=>new Response('{"message":"catalogue_changed"}',{status:400});
+ await assert.rejects(()=>storeRequest('/rest/v1/rpc/corporate_create_order_request'),StoreRejection);
+ globalThis.fetch=async()=>new Response('{"message":"catalogue_changed"}',{status:500});
+ await assert.rejects(()=>storeRequest('/rest/v1/rpc/corporate_create_order_request'),e=>!(e instanceof StoreRejection));
+});
+test('a conflicting existing request keeps its original key for investigation',async()=>{
+ const {StoreRejection}=await import('../src/store-api.ts');
+ globalThis.fetch=async()=>new Response('{"message":"request_changed"}',{status:400});
+ await assert.rejects(()=>storeRequest('/rest/v1/rpc/corporate_create_order_request'),e=>!(e instanceof StoreRejection));
+});

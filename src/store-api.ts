@@ -1,6 +1,7 @@
 import {commerceError} from './commerce.ts';
 export const STORE_URL='https://vthjdkwfvbfryofsmtdb.supabase.co';
 export const PUBLIC_KEY='sb_publishable_y__5ddJ5fQo0bdGnQtqgTg_kn6G5Hap';
+export class StoreRejection extends Error {}
 let accessToken='';
 export function setStoreToken(value:string){accessToken=value;}
 export async function storeRequest(path:string,options:RequestInit={}){
@@ -18,7 +19,7 @@ export async function storeRequest(path:string,options:RequestInit={}){
   let data:unknown=null;
   if(body){try{data=JSON.parse(body);}catch{throw new Error('The store returned an unreadable response. Please retry.');}}
   if(!response.ok){
-   if(data&&typeof data==='object'&&'message' in data){const message=commerceError(data.message);if(message)throw new Error(message);}
+   if(data&&typeof data==='object'&&'message' in data){const message=commerceError(data.message);if(message)throw response.status===400&&data.message!=='request_changed'?new StoreRejection(message):new Error(message);}
    if(response.status===401){accessToken='';throw new Error(path.startsWith('/auth/')?'Sign-in failed. Check your email and password.':'Your store session has expired. Please sign in again.');}
    if(response.status===403)throw new Error('This account is not authorised for this store action.');
    if(path.startsWith('/auth/'))throw new Error('Sign-in failed. Check your email and password.');
