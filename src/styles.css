@@ -97,3 +97,18 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .home-services{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:900px){.home-services{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.home-services{grid-template-columns:1fr}.hero-composition{min-height:310px}.hero-artwork{max-height:310px}}
+
+/* MLP accessibility and visual-quality corrections. */
+.home-hero .label {color:#78e6f2}
+.cta .label {color:#78e6f2}
+.site-header .brand,.site-header .nav a {color:#f7f9fc}
+.site-header .nav a:hover,.site-header .nav a[aria-current] {color:#78e6f2}
+.home-hero .hero-composition {width:100%;max-width:100%}
+.hero-composition .composition-window {display:none}
+.hero-composition .floating-note {background:#071527e8;color:#f7f9fc}
+.home-service:focus-within,.service:focus-within {outline:2px solid #087f9b;outline-offset:3px}
+@media(max-width:700px) {
+ .home-hero .actions {display:flex;flex-wrap:wrap;gap:12px}
+ .home-hero .actions .button {justify-content:center}
+ .hero-composition .floating-note {font-size:12px;max-width:80%}
+}
