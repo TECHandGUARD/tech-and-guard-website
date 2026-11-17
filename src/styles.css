@@ -20,3 +20,70 @@ button,.button,.nav a{min-height:44px}.brand{flex-shrink:0}.store-item span,.ser
 .import-notes{border-left:3px solid #a84000;background:#fff8ee;padding:18px 22px;margin:22px 0}.import-notes h4{margin-bottom:10px}.import-notes ul{padding-left:18px;font-size:13px}.import-notes li{margin:8px 0}
 
 .admin-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap}.admin-heading h2,.admin-heading h4{margin-bottom:10px}.admin-tabs{display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:16px;margin:24px 0}.admin-tabs button{padding:11px 16px;border:1px solid var(--border);border-radius:8px;background:white;color:var(--ink)}.admin-tabs button[aria-current]{background:var(--ink);color:white;border-color:var(--ink)}.admin-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:24px 0}.metric{padding:24px;border:1px solid var(--border);border-radius:12px;background:#f7f9fc}.metric strong{display:block;font-size:32px;color:var(--ink)}.metric span{font-size:13px;color:var(--muted)}.sku{display:block;color:var(--muted);font-size:11px}.product-editor,.order-card{padding:24px;border:1px solid var(--border);border-radius:10px;margin:20px 0;background:#f9fbfd}.order-card ul{padding-left:20px}.order-reference{overflow-wrap:anywhere;font-size:12px}.preserve-lines{white-space:pre-wrap}.admin-login{max-width:620px}.store-panel select,.store-panel textarea{display:block;width:100%;padding:12px;margin:6px 0 16px;border:1px solid var(--border);border-radius:8px;background:white}.store-table button{padding:6px 10px;background:white;border:1px solid var(--border);border-radius:5px}.store-panel .actions{margin:18px 0}button:disabled{opacity:.55;cursor:wait}@media(max-width:700px){.admin-metrics{grid-template-columns:repeat(2,1fr)}.admin-tabs{gap:6px}.admin-tabs button{font-size:12px;padding:9px}.order-card,.product-editor{padding:16px}}
+
+
+/* Tech & GUARD premium corporate identity — 2026-11-17.
+   Presentation-only layer: preserves existing routes, content and business logic. */
+:root {
+  --ink:#101b33;
+  --blue:#087f9b;
+  --muted:#536579;
+  --border:#dce5ed;
+  --tg-navy:#101b33;
+  --tg-navy-deep:#071527;
+  --tg-cyan:#00bfd8;
+  --tg-orange:#f58220;
+  --tg-silver:#b9c3ce;
+  background:#f7f9fc;
+  color:#101b33;
+}
+body {background:#f7f9fc;color:var(--ink)}
+h1,h2,h3,h4 {font-family:Manrope,Arial,sans-serif;color:var(--ink)}
+h1,h2 {font-weight:800;letter-spacing:-.045em}
+.label {color:#a9510b;letter-spacing:.15em}
+.site-header {background:rgba(7,21,39,.97);border-bottom:1px solid #294158;backdrop-filter:blur(16px)}
+.brand,.nav a,.menu-toggle {color:#f7f9fc}
+.brand small {color:#b9c3ce}
+.brand-mark {background:#102e48;border:1px solid #00bfd8;border-radius:9px}
+.brand-mark span {color:#00bfd8}
+.nav a:hover,.nav a[aria-current] {color:#6ee8f4;border-bottom-color:#00bfd8}
+.button {border-radius:10px;font-weight:700;min-height:46px;transition:transform .18s ease,background .18s ease,box-shadow .18s ease}
+.button:hover:not(:disabled) {transform:translateY(-2px)}
+.primary {background:#f58220;color:#071527;box-shadow:0 7px 20px #f5822026}
+.primary:hover {background:#ff9c46}
+.secondary,.ghost {background:transparent;color:#12304c;border-color:#a9bdcb}
+.secondary:hover,.ghost:hover {background:#e9f3f7}
+.text-link {color:#087f9b}
+.home-hero {width:100%;max-width:none;padding:90px max(24px,calc((100vw - 1160px)/2)) 95px;background:radial-gradient(ellipse at 82% 24%,#15517b 0%,transparent 40%),linear-gradient(125deg,#071527,#102b49);gap:58px}
+.home-hero h1,.home-hero h2 {color:#fff}
+.home-hero em {color:#45dce9}
+.home-hero p,.home-hero .hero-note {color:#d2e1ee}
+.home-hero .secondary {color:#fff;border-color:#89b3c7}
+.home-hero .secondary:hover {background:#ffffff17}
+.hero-composition {background:linear-gradient(145deg,#0a3457,#153f5c 55%,#f5822044);border:1px solid #31758e;border-radius:18px}
+.composition-label {color:#7ce6f0}
+.composition-window {border-color:#8cc6d4}
+.floating-note {border-color:#9cc9d4}
+.soft-section,footer,.company-card,.store-panel {background:#edf3f8}
+.home-service,.service,.contact-form,.company-card,.store-panel {border:1px solid #dce5ed;border-radius:14px;box-shadow:0 8px 28px #07152709}
+.home-service:hover {border-color:#00bfd8;box-shadow:0 16px 34px #07152716}
+.home-service>svg,.service-icon,.feature-list svg {color:#087f9b}
+.service-icon,.composition-tiles svg {background:#e0f6fa}
+.cta {background:linear-gradient(110deg,#0b233b,#143b5d);border:1px solid #1f5771;border-radius:16px}
+.cta h2,.cta p,.cta .label {color:#fff}
+.project-visual {background:linear-gradient(145deg,#e3f4f9,#f7f9fc);border-color:#b8d9e5;border-radius:16px}
+.project-visual h3 {font-family:Manrope,Arial,sans-serif;font-weight:800;color:#123b5a}
+.bridge-card {background:#e5f3f8;border-color:#b6d9e7;color:#087f9b}
+.principles>div {border-color:#00bfd8}
+.contact-email {color:#087f9b}
+footer {border-top:3px solid #00bfd8}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible {outline:3px solid #f58220;outline-offset:3px}
+@media(max-width:700px) {
+  .nav {background:#071527;border-color:#294158}
+  .nav a {color:#f7f9fc}
+  .home-hero {padding:60px 18px 65px;gap:34px}
+  .home-hero h1 {font-size:clamp(36px,10vw,54px)}
+  .hero-composition {height:310px}
+  .cta {padding:28px}
+}
+@media(prefers-reduced-motion:reduce) {.button:hover:not(:disabled),.home-service:hover,.project-visual:hover {transform:none}}
