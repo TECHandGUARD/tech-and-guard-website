@@ -38,3 +38,15 @@ export async function themeUpload(file:File){
  await storeRequest('/storage/v1/object/corporate-theme-uploads/'+path,{method:'POST',body:file,headers:{'Content-Type':'application/zip'}});
  return path;
 }
+
+export async function uploadProductImage(file: File){
+ const extension = {'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
+ if (!extension || file.size === 0 || file.size > 5 * 1024 * 1024) {
+  throw new Error('Choose a JPEG, PNG or WebP image up to 5 MB.');
+ }
+ const object = 'corporate-product-images/' + crypto.randomUUID() + '.' + extension;
+ await storeRequest('/storage/v1/object/' + object, {
+  method:'POST', body:file, headers:{'Content-Type':file.type},
+ });
+ return STORE_URL + '/storage/v1/object/public/' + object;
+}

@@ -62,3 +62,6 @@
  .admin-sidebar:not(.is-open){visibility:hidden}
  .admin-sidebar.is-open{visibility:visible}
 }
+
+.admin-app .product-editor fieldset{border:0;min-inline-size:0;margin:0;padding:0}
+.admin-app .product-editor small{display:block;margin:0 0 12px;color:#536477}

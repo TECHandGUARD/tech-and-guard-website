@@ -1,14 +1,150 @@
 import {useEffect,useRef,useState} from 'react';
+import {catalogueImage} from './catalogue-display';
 import {Product,money,priceToCents} from './commerce';
 import {StockAdjustment} from './StockAdjustment';
-import {storeRequest} from './store-api';
+import {STORE_URL,storeRequest,uploadProductImage} from './store-api';
+
+const blankDraft = {sku:'',title:'',description:'',price:'',options:'',image:''};
+type Draft = typeof blankDraft;
+type Editor = {product:Product|null;draft:Draft};
+
 export function Inventory({products,refresh,onLockChange}:{products:Product[];refresh:()=>Promise<void>;onLockChange?:(locked:boolean)=>void}){
- const [filter,setFilter]=useState(''),[selected,setSelected]=useState<Product|null>(null),[title,setTitle]=useState(''),[description,setDescription]=useState(''),[price,setPrice]=useState(''),[adjusting,setAdjusting]=useState<Product|null>(null),[stockFilter,setStockFilter]=useState('all'),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
- const editField=useRef<HTMLInputElement>(null);
- useEffect(()=>{if(selected)editField.current?.focus();},[selected?.sku]);
- const edit=(p:Product)=>{setAdjusting(null);setSelected(p);setTitle(p.title);setDescription(p.description);setPrice((p.price_cents/100).toFixed(2));setMessage('');};
- const save=async(e:React.FormEvent)=>{e.preventDefault();if(!selected)return;setBusy(true);try{await storeRequest('/rest/v1/rpc/corporate_edit_product',{method:'POST',body:JSON.stringify({product_sku:selected.sku,product_title:title,product_description:description,product_price_cents:priceToCents(price),product_stock:selected.stock,expected_updated_at:selected.updated_at})});await refresh();setSelected(null);setMessage('Product saved. Existing order request prices remain unchanged.');}catch(e){setMessage(e instanceof Error?e.message:'Product could not be saved.');}finally{setBusy(false);}};
- const publish=async(p:Product)=>{setBusy(true);try{await storeRequest('/rest/v1/corporate_products?sku=eq.'+encodeURIComponent(p.sku),{method:'PATCH',body:JSON.stringify({published:!p.published})});await refresh();setMessage(p.published?'Product unpublished.':'Product published.');}catch(e){setMessage(e instanceof Error?e.message:'Publication failed.');}finally{setBusy(false);}};
- return <section className="store-panel"><h3>Product catalogue</h3><label>Search by name or SKU<input type="search" value={filter} onChange={e=>setFilter(e.target.value)}/></label><label>Stock status<select value={stockFilter} onChange={e=>setStockFilter(e.target.value)}><option value="all">All stock</option><option value="low">Low stock (1–5 units)</option><option value="out">Out of stock</option><option value="unknown">Unknown stock</option></select></label>{adjusting&&<StockAdjustment key={adjusting.sku} product={adjusting} refresh={refresh} onLockChange={onLockChange} close={()=>setAdjusting(null)}/>}<p>Use Adjust stock to record deliveries, sellable returns, damage, losses and physical counts with a reason and history.</p>{selected&&<form className="product-editor" onSubmit={save}><h4>Edit {selected.sku}</h4><label>Product name<input ref={editField} required maxLength={300} value={title} onChange={e=>setTitle(e.target.value)}/></label><label>Description<textarea rows={4} required maxLength={10000} value={description} onChange={e=>setDescription(e.target.value)}/></label><div className="form-row"><label>Price in rand<input inputMode="decimal" required value={price} onChange={e=>setPrice(e.target.value)}/></label></div><div className="actions"><button className="button primary" disabled={busy}>Save product</button><button className="button secondary" type="button" disabled={busy} onClick={()=>setSelected(null)}>Cancel editing</button></div></form>}
- <div className="store-table"><table><thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Visibility</th><th>Actions</th></tr></thead><tbody>{products.filter(p=>stockFilter==='all'||stockFilter==='low'&&p.stock!==null&&p.stock>0&&p.stock<=5||stockFilter==='out'&&p.stock===0||stockFilter==='unknown'&&p.stock===null).filter(p=>(p.title+' '+p.sku).toLowerCase().includes(filter.toLowerCase())).map(p=><tr key={p.sku}><td>{p.title}<small className="sku">{p.sku}</small></td><td>{money(p.price_cents)}</td><td>{p.stock??'Unknown'}</td><td>{p.published?'Published':'Draft'}</td><td><button disabled={busy||!!adjusting} onClick={()=>edit(p)}>Edit</button> <button disabled={busy||!!adjusting} onClick={()=>{setSelected(null);setAdjusting(p);}}>Adjust stock / history</button> <button disabled={busy} onClick={()=>publish(p)}>{p.published?'Unpublish':'Publish'}</button></td></tr>)}</tbody></table></div>{message&&<p role="status">{message}</p>}</section>;
+ const [filter,setFilter]=useState('');
+ const [stockFilter,setStockFilter]=useState('all');
+ const [editor,setEditor]=useState<Editor|null>(null);
+ const [adjusting,setAdjusting]=useState<Product|null>(null);
+ const [busy,setBusy]=useState(false);
+ const [message,setMessage]=useState('');
+ const [failure,setFailure]=useState('');
+ const firstField=useRef<HTMLInputElement>(null);
+ const addButton=useRef<HTMLButtonElement>(null);
+ const pending=useRef(false);
+
+ useEffect(()=>{if(editor)firstField.current?.focus();},[editor?.product?.sku,Boolean(editor)]);
+
+ function edit(product:Product|null){
+  setFailure('');
+  setMessage('');
+  setEditor({product,draft:product ? {
+   sku:product.sku,title:product.title,description:product.description,price:(product.price_cents/100).toFixed(2),
+   options:product.options ?? '',image:product.image_url ?? '',
+  } : blankDraft});
+ }
+
+ function change(field:keyof Draft,value:string){
+  setEditor(current=>current && {...current,draft:{...current.draft,[field]:value}});
+ }
+
+ function closeEditor(){
+  setEditor(null);
+  addButton.current?.focus();
+ }
+
+ async function run(action:()=>Promise<void>){
+  if(pending.current)return;
+  pending.current=true;
+  setBusy(true);
+  setFailure('');
+  setMessage('');
+  try{await action();}
+  catch(error){setFailure(error instanceof Error?error.message:'Catalogue action failed.');}
+  finally{pending.current=false;setBusy(false);}
+ }
+
+ async function reload(success:string){
+  setMessage(success);
+  try{await refresh();}
+  catch{setMessage(success+' Select Refresh data to reload your catalogue.');}
+ }
+
+ async function save(event:React.FormEvent){
+  event.preventDefault();
+  if(!editor)return;
+  const {draft,product}=editor;
+  await run(async()=>{
+   if(!draft.sku.trim()||!draft.title.trim())throw new Error('Enter a SKU and product name.');
+   const imageInput=draft.image.trim();
+   const unchanged=imageInput===(product?.image_url ?? '');
+   const image=unchanged ? imageInput : catalogueImage(imageInput);
+   if(imageInput&&!image)throw new Error('Enter a valid HTTPS product image URL.');
+   if(image&&!unchanged&&!image.startsWith('https://images.unsplash.com/')&&
+      !image.startsWith(STORE_URL+'/storage/v1/object/public/corporate-product-images/')){
+    throw new Error('Upload a photo for this product or use an approved image URL.');
+   }
+   await storeRequest('/rest/v1/rpc/corporate_save_catalogue_product',{method:'POST',body:JSON.stringify({
+    sku:draft.sku,title:draft.title,description:draft.description,price_cents:priceToCents(draft.price),
+    options:draft.options,image_url:image,expected_updated_at:product?.updated_at ?? null,
+   })});
+   closeEditor();
+   await reload(product?'Product saved.':'Draft product created. Publish it when you are ready.');
+  });
+ }
+
+ async function publish(product:Product){
+  await run(async()=>{
+   await storeRequest('/rest/v1/rpc/corporate_set_catalogue_visibility',{method:'POST',body:JSON.stringify({
+    sku:product.sku,published:!product.published,expected_updated_at:product.updated_at,
+   })});
+   await reload(product.published?'Product unpublished.':'Product published to the Store.');
+  });
+ }
+
+ async function photo(file:File|undefined){
+  if(!file)return;
+  await run(async()=>{
+   change('image',await uploadProductImage(file));
+   setMessage('Image uploaded. Save the product to use it.');
+  });
+ }
+
+ const visible=products.filter(product=>(stockFilter==='all'
+  ||stockFilter==='low'&&product.stock!==null&&product.stock>0&&product.stock<=5
+  ||stockFilter==='out'&&product.stock===0
+  ||stockFilter==='unknown'&&product.stock===null)
+  &&(product.title+' '+product.sku).toLowerCase().includes(filter.trim().toLowerCase()));
+ return <section className="store-panel">
+  <div className="admin-card-heading">
+   <h2>Product catalogue</h2>
+   <button ref={addButton} className="button primary" disabled={busy||!!adjusting||!!editor} onClick={()=>edit(null)}>Add product</button>
+  </div>
+  {message&&<p role="status">{message}</p>}
+  {failure&&<p role="alert">{failure}</p>}
+  {editor&&<form className="product-editor" onSubmit={event=>void save(event)}>
+   <h3>{editor.product?'Edit '+editor.product.sku:'New product draft'}</h3>
+   <fieldset disabled={busy}>
+    <div className="form-row">
+     {editor.product
+      ? <label>Product name<input ref={firstField} required maxLength={300} value={editor.draft.title} onChange={event=>change('title',event.target.value)}/></label>
+      : <><label>SKU<input ref={firstField} required maxLength={160} value={editor.draft.sku} onChange={event=>change('sku',event.target.value)}/></label>
+       <label>Product name<input required maxLength={300} value={editor.draft.title} onChange={event=>change('title',event.target.value)}/></label></>}
+     <label>Price in rand<input inputMode="decimal" required value={editor.draft.price} onChange={event=>change('price',event.target.value)}/></label>
+    </div>
+    <label>Description<textarea rows={4} maxLength={10000} value={editor.draft.description} onChange={event=>change('description',event.target.value)}/></label>
+    <label>Variant or options<input maxLength={1000} value={editor.draft.options} onChange={event=>change('options',event.target.value)}/></label>
+    <label>Product image URL<input type="url" maxLength={2000} value={editor.draft.image} onChange={event=>change('image',event.target.value)}/></label>
+    <label>Upload product photo<input type="file" accept="image/jpeg,image/png,image/webp" onChange={event=>{const file=event.target.files?.[0];event.target.value='';void photo(file);}}/></label>
+    <small>Upload images you have permission to publish. Uploaded photos are publicly accessible by URL.</small>
+    <div className="actions">
+     <button className="button primary">{editor.product?'Save product':'Save draft'}</button>
+     <button className="button secondary" type="button" onClick={closeEditor}>Cancel editing</button>
+    </div>
+   </fieldset>
+  </form>}
+  <label>Search by name or SKU<input type="search" value={filter} onChange={event=>setFilter(event.target.value)}/></label>
+  <label>Stock status<select value={stockFilter} onChange={event=>setStockFilter(event.target.value)}>
+   <option value="all">All stock</option><option value="low">Low stock (1–5 units)</option><option value="out">Out of stock</option><option value="unknown">Unknown stock</option>
+  </select></label>
+  {adjusting&&<StockAdjustment key={adjusting.sku} product={adjusting} refresh={refresh} onLockChange={onLockChange} close={()=>setAdjusting(null)}/>}
+  <p>Use Adjust stock to record quantities and see stock history.</p>
+  {visible.length===0?<p>No products match this view.</p>:<div className="store-table admin-table-region" role="region" aria-label="Catalogue products" tabIndex={0}>
+   <table><thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Visibility</th><th>Actions</th></tr></thead>
+   <tbody>{visible.map(product=><tr key={product.sku}>
+    <td>{product.title}<small className="sku">{product.sku}</small></td>
+    <td>{money(product.price_cents)}</td><td>{product.stock??'Unknown'}</td><td>{product.published?'Published':'Draft'}</td>
+    <td><button disabled={busy||!!adjusting||!!editor} onClick={()=>edit(product)}>Edit</button>{' '}
+     <button disabled={busy||!!adjusting||!!editor} onClick={()=>setAdjusting(product)}>Adjust stock / history</button>{' '}
+     <button disabled={busy||!!adjusting||!!editor} onClick={()=>void publish(product)}>{product.published?'Unpublish':'Publish'}</button></td>
+   </tr>)}</tbody></table>
+  </div>}
+ </section>;
 }
