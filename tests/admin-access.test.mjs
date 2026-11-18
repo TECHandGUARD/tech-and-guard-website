@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {checkAdminAccess} from '../src/admin-access.ts';
+import {storeRequest} from '../src/store-api.ts';
 import {authFetch} from '../src/auth-fetch.ts';
 import {authErrorMessage} from '../src/auth-errors.ts';
 import {createClient} from '@supabase/supabase-js';
@@ -12,6 +13,22 @@ test('dashboard access checks permissions independently of catalogue loading',as
  assert.deepEqual(await checkAdminAccess(async path=>path.endsWith('is_admin')?true:'staff'),{owner:false});
  await assert.rejects(checkAdminAccess(async()=>false),/signed in.*does not have/);
  await assert.rejects(checkAdminAccess(async()=>{throw new Error('Session expired');}),/Session expired/);
+});
+test('customer denial does not query staff roles and legacy administrators can have a null role',async()=>{
+ const original=global.fetch;
+ const calls=[];
+ let allowed=false;
+ try{
+  global.fetch=async url=>{
+   const operation=new URL(url).pathname.split('/').at(-1);
+   calls.push(operation);
+   return new Response(operation==='corporate_is_admin'?JSON.stringify(allowed):'null');
+  };
+  await assert.rejects(checkAdminAccess(storeRequest),/does not have store administrator access/);
+  assert.deepEqual(calls,['corporate_is_admin']);
+  allowed=true;
+  assert.deepEqual(await checkAdminAccess(storeRequest),{owner:false});
+ }finally{global.fetch=original;}
 });
 test('account fetch aborts stalled connections and exposes a useful account error',async()=>{
  const original=global.fetch;

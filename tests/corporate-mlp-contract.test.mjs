@@ -16,11 +16,14 @@ test('corporate website retains all five approved services', () => {
 });
 
 test('home page renders the complete service catalogue', () => {
-  assert.match(source, /services\.map\(s\s*=>/);
+  const home = source.slice(source.indexOf('function Home()'), source.indexOf('function App()'));
+  assert.match(home, /services\.map\(\(s,i\)=>/);
 });
 
-test('contact form accurately describes mailto-only submission', () => {
-  assert.match(source, /This form prepares an email on your device/);
+test('contact supports direct enquiry and keeps an email fallback', () => {
+  assert.match(source, /<EnquiryForm kind="service"/);
+  const form = readFileSync(new URL('../src/EnquiryForm.tsx', import.meta.url), 'utf8');
+  assert.match(form, /Open email draft/);
   assert.match(source, /mailto:aneleq@techandguard\.co\.za/);
 });
 
@@ -34,4 +37,12 @@ test('premium theme has approved brand tokens and keyboard focus', () => {
 test('project case study does not present pilot as a completed rollout', () => {
   assert.match(source, /Live pilot/);
   assert.match(source, /Online checkout is not yet active/);
+});
+
+test('the public store offers an email enquiry without a customer sign-in or checkout', () => {
+  const store = readFileSync(new URL('../src/Store.tsx', import.meta.url), 'utf8');
+  assert.match(store, /mailto:/);
+  assert.match(store, /Email enquiry opens a draft/);
+  assert.doesNotMatch(store, /StoreCheckout|corporate_create_order_request|href="\/account\//);
+  assert.doesNotMatch(source, /className="account-nav-link"/);
 });
