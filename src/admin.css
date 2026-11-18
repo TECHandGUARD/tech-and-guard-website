@@ -54,3 +54,11 @@
 .admin-app :is(a,button,input,select,textarea):focus-visible{outline:3px solid #bd874b;outline-offset:2px}
 .admin-app .admin-heading-description,.admin-app .store-panel p,.admin-app .admin-page-description,.admin-app .sku,.admin-app .admin-workspace-footer{color:#536477}
 @media(max-width:760px){.admin-app .admin-content{padding:24px 16px}.admin-app .store-panel{padding:20px 16px}.admin-app .store-table{-webkit-overflow-scrolling:touch}}
+
+.admin-app h1[tabindex="-1"]{scroll-margin-top:106px}
+.admin-app .admin-nav-item{min-height:44px}
+.admin-app .admin-table-region:focus-visible{outline:3px solid #95602f;outline-offset:3px}
+@media(max-width:760px){
+ .admin-sidebar:not(.is-open){visibility:hidden}
+ .admin-sidebar.is-open{visibility:visible}
+}
