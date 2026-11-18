@@ -1,12 +1,14 @@
 import {useEffect, useRef, useState} from 'react';
-import {ArrowDownRight, ArrowUpRight, Minus, Package, Plus, ShoppingBag} from 'lucide-react';
+import {ArrowDownRight, ArrowUpRight, BatteryCharging, BriefcaseBusiness, Headphones, Minus, Package, Plus, ShoppingBag, Smartphone} from 'lucide-react';
 import './showroom.css';
+import {storeCategories, storeCategory, type StoreCategory} from './store-categories';
 import {basketQuantityLimit, changeBasket, maxBasketLines, readBasket} from './basket';
 import {catalogueImage, catalogueText} from './catalogue-display';
 import {money} from './commerce';
 import {storeRequest} from './store-api';
 import type {ProductDraft} from './store-import';
 
+const categoryIcons = {work:BriefcaseBusiness,power:BatteryCharging,audio:Headphones,everyday:Smartphone};
 const enquiryEmail = 'aneleq@techandguard.co.za';
 const basketKey = 'tech-guard:enquiry-basket';
 type Product = ProductDraft & {published: boolean};
@@ -33,9 +35,11 @@ export function Store() {
  const [search, setSearch] = useState('');
  const [sort, setSort] = useState('name');
  const [availability, setAvailability] = useState('all');
+ const [category, setCategory] = useState<StoreCategory|'all'>('all');
  const [basket, setBasket] = useState(savedBasket);
  const [basketMessage, setBasketMessage] = useState('');
  const basketHeading = useRef<HTMLHeadingElement>(null);
+ const catalogueHeading = useRef<HTMLHeadingElement>(null);
 
  useEffect(() => {
   const controller = new AbortController();
@@ -56,7 +60,8 @@ export function Store() {
  const query = search.trim().toLowerCase().split(/\s+/);
  const filtered = products.filter(p => {
   const text = [p.title, p.options, p.description, p.sku].join(' ').toLowerCase();
-  return query.every(term => text.includes(term)) && (availability === 'all'
+  return (category === 'all' || storeCategory(p.title) === category)
+   && query.every(term => text.includes(term)) && (availability === 'all'
    || (availability === 'listed' && p.stock !== null && p.stock > 0)
    || (availability === 'confirm' && p.stock === null));
  }).sort((a, b) => sort === 'price-low' ? a.price_cents - b.price_cents
@@ -112,21 +117,43 @@ export function Store() {
    <div className="container showroom-hero-inner">
     <div>
      <p className="showroom-brand">TECH &amp; GUARD STORE</p>
-     <h1>Technology for<br/>work and everyday use.</h1>
-     <p className="showroom-lead">Explore bags, charging gear, audio and accessories. Build an enquiry and we’ll confirm availability and delivery.</p>
+     <h1>Better gear for<br/>every day.</h1>
+     <p className="showroom-lead">Shop laptop bags, charging gear and audio. Find what suits you and enquire about availability and delivery.</p>
      <div className="actions">
       <a className="button primary" href="#catalogue">Browse products <ArrowDownRight size={18} aria-hidden="true"/></a>
       <button type="button" className="button secondary" onClick={() => basketHeading.current?.focus()}><ShoppingBag size={17} aria-hidden="true"/> Enquiry basket ({count})</button>
      </div>
     </div>
-    <div className="showroom-pattern" aria-hidden="true"><span/><span/><span/></div>
+    <img className="showroom-editorial" src="/images/store-editorial.webp" alt="" width={1200} height={800} fetchPriority="high"/>
    </div>
   </header>
 
+  {products.length > 0 && <section className="container showroom-categories" aria-labelledby="category-title">
+   <h2 id="category-title">Shop by category</h2>
+   <div className="showroom-category-grid">
+    {(Object.keys(storeCategories) as StoreCategory[]).map(key => {
+     const Icon = categoryIcons[key];
+     const amount = products.filter(product => storeCategory(product.title) === key).length;
+     if (!amount) return null;
+     return <button key={key} className="showroom-category" type="button" onClick={() => {
+      setCategory(key); setSearch(''); setAvailability('all'); catalogueHeading.current?.focus();
+     }}>
+      <Icon size={22} strokeWidth={1.55} aria-hidden="true"/>
+      <span><strong>{storeCategories[key]}</strong><small>{amount} {amount === 1 ? 'product' : 'products'}</small></span>
+      <ArrowUpRight size={16} aria-hidden="true"/>
+     </button>;
+    })}
+   </div>
+  </section>}
+
   <div className="container showroom-workspace">
    <section id="catalogue" className="showroom-catalogue" aria-labelledby="catalogue-title">
-    <h2 id="catalogue-title">Product catalogue</h2>
+    <h2 id="catalogue-title" ref={catalogueHeading} tabIndex={-1}>Product catalogue</h2>
   {products.length > 0 && <>
+   {category !== 'all' && <div className="showroom-active-category">
+    <strong>{storeCategories[category]}</strong>
+    <button type="button" onClick={() => setCategory('all')}>Show all categories</button>
+   </div>}
    <div className="catalogue-tools">
     <label>Search products<input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Name, variant or SKU"/></label>
     <label>Availability<select value={availability} onChange={e => setAvailability(e.target.value)}><option value="all">All products</option><option value="listed">Listed in stock</option><option value="confirm">Stock to confirm</option></select></label>
@@ -137,7 +164,7 @@ export function Store() {
   {state === 'loading' ? <p role="status">Loading products…</p>
    : state === 'error' ? <div className="store-panel"><p role="alert">The catalogue is temporarily unavailable.</p><button className="button secondary" onClick={() => { setState('loading'); setReload(n => n + 1); }}>Retry catalogue</button> <a className="text-link" href={`mailto:${enquiryEmail}`}>Email us about a product</a></div>
    : !products.length ? <div className="store-panel"><h3>Products coming soon</h3><p>Please contact us for the current catalogue.</p></div>
-   : !filtered.length ? <div><p>No products match these filters.</p><button className="button secondary" onClick={() => { setSearch(''); setAvailability('all'); setSort('name'); }}>Reset filters</button></div>
+   : !filtered.length ? <div><p>No products match these filters.</p><button className="button secondary" onClick={() => { setSearch(''); setAvailability('all'); setSort('name'); setCategory('all'); }}>Reset filters</button></div>
    : <div className="showroom-grid">{filtered.map(p => {
     const quantity = quantityFor(p.sku);
     const atLimit = quantity >= basketQuantityLimit(p.stock) || (!quantity && Object.keys(basket).length >= maxBasketLines);
