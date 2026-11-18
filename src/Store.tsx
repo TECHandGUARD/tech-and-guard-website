@@ -1,4 +1,4 @@
-import {lazy, Suspense, useEffect, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Minus, Plus, ShoppingBag} from 'lucide-react';
 import {basketQuantityLimit, changeBasket, maxBasketLines, readBasket} from './basket';
 import {catalogueImage, catalogueText} from './catalogue-display';
@@ -6,7 +6,7 @@ import {money} from './commerce';
 import {storeRequest} from './store-api';
 import type {ProductDraft} from './store-import';
 
-const StoreCheckout = lazy(() => import('./StoreCheckout'));
+const enquiryEmail = 'aneleq@techandguard.co.za';
 const basketKey = 'tech-guard:enquiry-basket';
 type Product = ProductDraft & {published: boolean};
 const cataloguePath = '/rest/v1/corporate_products?select=sku,handle,title,description,price_cents,stock,image_url,options,published&published=eq.true&order=title';
@@ -34,9 +34,7 @@ export function Store() {
  const [availability, setAvailability] = useState('all');
  const [basket, setBasket] = useState(savedBasket);
  const [basketMessage, setBasketMessage] = useState('');
- const [requestOpen, setRequestOpen] = useState(false);
  const basketHeading = useRef<HTMLHeadingElement>(null);
- const requestHeading = useRef<HTMLHeadingElement>(null);
 
  useEffect(() => {
   const controller = new AbortController();
@@ -54,8 +52,6 @@ export function Store() {
   catch { /* The in-memory basket remains available. */ }
  }, [basket]);
 
- useEffect(() => { if (requestOpen) requestHeading.current?.focus(); }, [requestOpen]);
-
  const query = search.trim().toLowerCase().split(/\s+/);
  const filtered = products.filter(p => {
   const text = [p.title, p.options, p.description, p.sku].join(' ').toLowerCase();
@@ -71,8 +67,28 @@ export function Store() {
  const invalid = lines.some(p => quantityFor(p.sku) > basketQuantityLimit(p.stock));
  const count = Object.values(basket).reduce((sum, quantity) => sum + quantity, 0);
  const total = lines.reduce((sum, p) => sum + p.price_cents * quantityFor(p.sku), 0);
- const body = lines.map(p => `${quantityFor(p.sku)} × ${p.title} (${p.options || p.sku}) — ${money(p.price_cents)} each`).join('\n')
-  + `\nListed subtotal: ${money(total)}\nPlease confirm stock and delivery costs.`;
+ const body = [
+  'Hi Tech & GUARD,',
+  '',
+  'I’d like to enquire about these products:',
+  '',
+  ...lines.map(p => `${quantityFor(p.sku)} × ${p.title} (SKU ${p.sku}${p.options ? ` · ${p.options}` : ''}) — ${money(p.price_cents)} each`),
+  '',
+  `Listed subtotal: ${money(total)}`,
+  'Please confirm stock and delivery costs.',
+  'My town or suburb: ',
+ ].join('\n');
+ const canEnquire = state === 'ready' && lines.length > 0 && missing.length === 0 && !invalid;
+ const enquiryLink = `mailto:${enquiryEmail}?subject=Product%20enquiry&body=${encodeURIComponent(body)}`;
+
+ async function copyEnquiry() {
+  try {
+   await navigator.clipboard.writeText(body);
+   setBasketMessage('Enquiry copied. Paste it into an email to ' + enquiryEmail + '.');
+  } catch {
+   setBasketMessage('Could not copy your enquiry. Use Email enquiry to open it in your email app.');
+  }
+ }
 
  function updateQuantity(product: Product, adjustment: number) {
   setBasket(current => changeBasket(current, product.sku, adjustment, product.stock));
@@ -90,25 +106,11 @@ export function Store() {
   setBasketMessage('Item removed from your enquiry.');
  }
 
- function clearSubmittedItems(items: Array<{sku: string; quantity: number}>) {
-  setBasket(current => {
-   const remaining = {...current};
-   for (const item of items) {
-    if (!Object.prototype.hasOwnProperty.call(remaining, item.sku)) continue;
-    const quantity = remaining[item.sku] - item.quantity;
-    if (quantity > 0) remaining[item.sku] = quantity;
-    else delete remaining[item.sku];
-   }
-   return remaining;
-  });
- }
-
- const canSubmit = state === 'ready' && lines.length > 0 && missing.length === 0 && !invalid;
  return <section id="store" className="section services dawn-store"><div className="container">
   <div className="section-heading"><div><span className="label">TECH &amp; GUARD COLLECTION</span><h2>Browse the catalogue</h2></div>
-   <p>Build an enquiry and submit an unpaid order request. We’ll confirm the model, availability and delivery with you.</p></div>
+   <p>Choose the products you’re interested in and email us to confirm availability and delivery.</p></div>
   <div className="store-shortcuts">
-   <a className="text-link" href="/account/">Account and saved requests</a>
+   <a className="text-link" href={`mailto:${enquiryEmail}`}>Ask us about a product</a>
    <button type="button" className="button secondary" onClick={() => basketHeading.current?.focus()}><ShoppingBag size={17}/> Enquiry basket ({count})</button>
   </div>
   {products.length > 0 && <>
@@ -119,9 +121,8 @@ export function Store() {
    </div>
    <p className="catalogue-count" role="status">{filtered.length} of {products.length} products</p>
   </>}
-  <p className="sr-only" role="status">{basketMessage}</p>
   {state === 'loading' ? <p role="status">Loading products…</p>
-   : state === 'error' ? <div className="store-panel"><p role="alert">The catalogue is temporarily unavailable.</p><button className="button secondary" onClick={() => { setState('loading'); setReload(n => n + 1); }}>Retry catalogue</button></div>
+   : state === 'error' ? <div className="store-panel"><p role="alert">The catalogue is temporarily unavailable.</p><button className="button secondary" onClick={() => { setState('loading'); setReload(n => n + 1); }}>Retry catalogue</button> <a className="text-link" href={`mailto:${enquiryEmail}`}>Email us about a product</a></div>
    : !products.length ? <div className="service"><h3>Products coming soon</h3><p>Please contact us for the current catalogue.</p></div>
    : !filtered.length ? <div><p>No products match these filters.</p><button className="button secondary" onClick={() => { setSearch(''); setAvailability('all'); setSort('name'); }}>Reset filters</button></div>
    : <div className="service-grid">{filtered.map(p => {
@@ -152,13 +153,14 @@ export function Store() {
     {missing.map(sku => <li key={sku}><span>{sku} is unavailable</span><button type="button" onClick={() => removeLine(sku)}>Remove {sku}</button></li>)}
    </ul>}
    {!!lines.length && <><p>Listed subtotal <strong>{money(total)}</strong>. Delivery is confirmed separately.</p>
-    <div className="actions"><button className="button primary" disabled={!canSubmit} onClick={() => { if (requestOpen) requestHeading.current?.focus(); else setRequestOpen(true); }}>Continue to order request</button>
-     <a className="button secondary" href={'mailto:aneleq@techandguard.co.za?subject=Product%20enquiry&body='+encodeURIComponent(body)}>Email enquiry</a></div></>}
+    {canEnquire ? <>
+     <div className="actions">
+      <a className="button primary" href={enquiryLink}>Email enquiry</a>
+      <button type="button" className="button secondary" onClick={() => void copyEnquiry()}>Copy enquiry</button>
+     </div>
+     <p>Email enquiry opens a draft in your email app. Add your town or suburb, then send it to <a href={`mailto:${enquiryEmail}`}>{enquiryEmail}</a>.</p>
+    </> : <p>Update the unavailable items or quantities to continue.</p>}</>}
+   <p className="enquiry-feedback" role="status">{basketMessage}</p>
   </section>
-  {requestOpen && <section className="store-panel" aria-labelledby="request-heading"><h3 ref={requestHeading} tabIndex={-1} id="request-heading">Unpaid order request</h3>
-   <Suspense fallback={<p role="status">Loading secure request form…</p>}><StoreCheckout
-    items={lines.map(p => ({sku: p.sku, quantity: quantityFor(p.sku)}))}
-    canSubmit={canSubmit} onSubmitted={clearSubmittedItems} onStartAnother={() => { setRequestOpen(false); basketHeading.current?.focus(); }}/></Suspense>
-  </section>}
  </div></section>;
 }
