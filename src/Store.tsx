@@ -1,5 +1,6 @@
 import {useEffect, useRef, useState} from 'react';
-import {Minus, Plus, ShoppingBag} from 'lucide-react';
+import {ArrowDownRight, ArrowUpRight, Minus, Package, Plus, ShoppingBag} from 'lucide-react';
+import './showroom.css';
 import {basketQuantityLimit, changeBasket, maxBasketLines, readBasket} from './basket';
 import {catalogueImage, catalogueText} from './catalogue-display';
 import {money} from './commerce';
@@ -21,7 +22,7 @@ function ProductImage({product}: {product: Product}) {
  return <div className="premium-product-media">
   {product.image_url && !failed
    ? <img className="product-image" src={product.image_url} alt={product.title} loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setFailed(true)}/>
-   : <span className="premium-product-placeholder" aria-hidden="true">TECH &amp; GUARD</span>}
+   : <span className="premium-product-placeholder"><Package size={38} strokeWidth={1.15} aria-hidden="true"/>Photo unavailable</span>}
  </div>;
 }
 
@@ -106,13 +107,25 @@ export function Store() {
   setBasketMessage('Item removed from your enquiry.');
  }
 
- return <section id="store" className="section services dawn-store"><div className="container">
-  <div className="section-heading"><div><span className="label">TECH &amp; GUARD COLLECTION</span><h2>Browse the catalogue</h2></div>
-   <p>Choose the products you’re interested in and email us to confirm availability and delivery.</p></div>
-  <div className="store-shortcuts">
-   <a className="text-link" href={`mailto:${enquiryEmail}`}>Ask us about a product</a>
-   <button type="button" className="button secondary" onClick={() => basketHeading.current?.focus()}><ShoppingBag size={17}/> Enquiry basket ({count})</button>
-  </div>
+ return <div className="store-showroom">
+  <header className="showroom-hero">
+   <div className="container showroom-hero-inner">
+    <div>
+     <p className="showroom-brand">TECH &amp; GUARD STORE</p>
+     <h1>Technology for<br/>work and everyday use.</h1>
+     <p className="showroom-lead">Explore bags, charging gear, audio and accessories. Build an enquiry and we’ll confirm availability and delivery.</p>
+     <div className="actions">
+      <a className="button primary" href="#catalogue">Browse products <ArrowDownRight size={18} aria-hidden="true"/></a>
+      <button type="button" className="button secondary" onClick={() => basketHeading.current?.focus()}><ShoppingBag size={17} aria-hidden="true"/> Enquiry basket ({count})</button>
+     </div>
+    </div>
+    <div className="showroom-pattern" aria-hidden="true"><span/><span/><span/></div>
+   </div>
+  </header>
+
+  <div className="container showroom-workspace">
+   <section id="catalogue" className="showroom-catalogue" aria-labelledby="catalogue-title">
+    <h2 id="catalogue-title">Product catalogue</h2>
   {products.length > 0 && <>
    <div className="catalogue-tools">
     <label>Search products<input type="search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Name, variant or SKU"/></label>
@@ -123,23 +136,25 @@ export function Store() {
   </>}
   {state === 'loading' ? <p role="status">Loading products…</p>
    : state === 'error' ? <div className="store-panel"><p role="alert">The catalogue is temporarily unavailable.</p><button className="button secondary" onClick={() => { setState('loading'); setReload(n => n + 1); }}>Retry catalogue</button> <a className="text-link" href={`mailto:${enquiryEmail}`}>Email us about a product</a></div>
-   : !products.length ? <div className="service"><h3>Products coming soon</h3><p>Please contact us for the current catalogue.</p></div>
+   : !products.length ? <div className="store-panel"><h3>Products coming soon</h3><p>Please contact us for the current catalogue.</p></div>
    : !filtered.length ? <div><p>No products match these filters.</p><button className="button secondary" onClick={() => { setSearch(''); setAvailability('all'); setSort('name'); }}>Reset filters</button></div>
-   : <div className="service-grid">{filtered.map(p => {
+   : <div className="showroom-grid">{filtered.map(p => {
     const quantity = quantityFor(p.sku);
     const atLimit = quantity >= basketQuantityLimit(p.stock) || (!quantity && Object.keys(basket).length >= maxBasketLines);
-    return <article className="service product-card" key={p.sku}>
+    return <article className="product-card" key={p.sku}>
      <ProductImage key={p.image_url} product={p}/>
-     <h3>{p.title}</h3>{p.options && <p>{p.options}</p>}<p>{p.description}</p>
+     <h3>{p.title}</h3>{p.options && <p className="showroom-variant">{p.options}</p>}<p>{p.description}</p>
      <div className="product-card-actions"><strong className="premium-product-price">{money(p.price_cents)}</strong>
-      <p className="premium-stock-status">{p.stock === null ? 'Stock to be confirmed' : p.stock === 0 ? 'Out of stock' : `${p.stock} listed · availability subject to confirmation`}</p>
+      <p className="premium-stock-status">{p.stock === 0 ? 'Out of stock' : 'Confirm availability with us'}</p>
       <button className="button ghost" disabled={atLimit} aria-label={`Add ${p.title} to enquiry`} onClick={() => updateQuantity(p, 1)}>{quantity ? `Add another · ${quantity} in basket` : 'Add to enquiry'}</button>
      </div>
     </article>;
    })}</div>}
-  <section className="store-panel enquiry-basket" aria-labelledby="enquiry-basket">
+   </section>
+  <aside className="store-panel enquiry-basket" aria-labelledby="enquiry-basket">
    <h3 id="enquiry-basket" ref={basketHeading} tabIndex={-1}>Your enquiry basket</h3>
    {!count && <p>Add products from the catalogue to start an enquiry.</p>}
+   <a className="showroom-contact" href={`mailto:${enquiryEmail}`}>Ask about a product <ArrowUpRight size={15} aria-hidden="true"/></a>
    {!!(lines.length || missing.length) && <ul className="enquiry-items">
     {lines.map(p => <li key={p.sku}><div><strong>{p.title}</strong><small>{money(p.price_cents)} each</small>
      {quantityFor(p.sku) > basketQuantityLimit(p.stock) && <small role="alert">Reduce the quantity to the available limit of {basketQuantityLimit(p.stock)}.</small>}</div>
@@ -161,6 +176,6 @@ export function Store() {
      <p>Email enquiry opens a draft in your email app. Add your town or suburb, then send it to <a href={`mailto:${enquiryEmail}`}>{enquiryEmail}</a>.</p>
     </> : <p>Update the unavailable items or quantities to continue.</p>}</>}
    <p className="enquiry-feedback" role="status">{basketMessage}</p>
-  </section>
- </div></section>;
+  </aside>
+ </div></div>;
 }
