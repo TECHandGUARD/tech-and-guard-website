@@ -1,6 +1,8 @@
 import {commerceError} from './commerce.ts';
-export const STORE_URL='https://vthjdkwfvbfryofsmtdb.supabase.co';
-export const PUBLIC_KEY='sb_publishable_y__5ddJ5fQo0bdGnQtqgTg_kn6G5Hap';
+import {resolveStoreConfig} from './store-config.ts';
+const config=resolveStoreConfig(import.meta.env);
+export const STORE_URL=config.url;
+export const PUBLIC_KEY=config.key;
 export class StoreRejection extends Error {}
 let accessToken='';
 export function setStoreToken(value:string){accessToken=value;}

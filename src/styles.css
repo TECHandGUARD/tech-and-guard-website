@@ -299,3 +299,12 @@ body{background:#f3f8fb}
 .dawn-store [tabindex="-1"]:focus-visible{outline:3px solid #95602f;outline-offset:5px}
 .enquiry-feedback:empty{margin:0}
 .enquiry-basket .actions{display:flex;flex-wrap:wrap;gap:10px}
+
+.footer-grid .brand {color:#152b45}
+.footer-grid .brand small {color:#42556d}
+.footer-grid .brand-mark {color:#f2f8ff}
+.contact-layout .contact-email {color:#17426c;overflow-wrap:anywhere}
+.guest-enquiry .actions {display:flex;flex-wrap:wrap;gap:10px}
+.guest-enquiry input,.guest-enquiry textarea,.guest-enquiry select {max-width:100%}
+.enquiry-receipt code {overflow-wrap:anywhere}
+.contact-layout aside .text-link{color:#17426c}
