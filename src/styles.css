@@ -161,3 +161,21 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .home-hero .hero-photo{display:block;position:relative;min-height:365px;height:390px;overflow:hidden;background:#081d30;border:1px solid #215a76;border-radius:16px;box-shadow:0 25px 65px #0007}
 .home-hero .hero-photo img{display:block;width:100%;height:100%;object-fit:cover;object-position:55% center;filter:saturate(1.1) contrast(1.04)}
 @media(max-width:700px){.home-hero .hero-photo{height:265px;min-height:265px;border-radius:15px 15px 0 0}.home-hero .hero-photo img{object-position:65% center}}
+
+/* Human-first editorial polish: approachable copy, breathing room and clear actions. */
+.human-section{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,6vw,90px);align-items:center;margin-top:58px;margin-bottom:54px;padding:clamp(28px,4vw,60px);background:linear-gradient(125deg,#f2f8fb,#fff);border:1px solid #dceaf1;border-radius:24px}
+.human-intro .label{color:#087e98;margin-bottom:12px}
+.human-intro h2{font-size:clamp(29px,3.4vw,43px);line-height:1.12;letter-spacing:-.035em;margin-bottom:18px}
+.human-intro p{font-size:16px;line-height:1.7;color:#405467}
+.human-intro .text-link{color:#076d85;font-size:15px}
+.human-steps{display:grid;gap:18px}
+.human-steps>div{display:flex;gap:18px;align-items:flex-start;padding:16px 0;border-bottom:1px solid #d9e5ed}
+.human-steps>div:last-child{border-bottom:0}
+.human-steps>div>span{display:grid;place-items:center;flex:0 0 43px;height:43px;background:#07334b;color:#51d5e6;border-radius:13px;font-weight:800;font-size:13px}
+.human-steps h3{font-size:17px;margin:0 0 6px;color:#102b40}
+.human-steps p{font-size:14px;line-height:1.55;margin:0;color:#526779}
+.site-header .account-nav-link{display:inline-flex;align-items:center;gap:5px;color:#a8e7f0}
+.home-service,.featured-project-card,.button{transition:transform .2s ease,box-shadow .2s ease,background-color .2s ease}
+@media(hover:hover){.home-service:hover,.featured-project-card:hover{transform:translateY(-4px);box-shadow:0 17px 35px #07233c29}.button:hover{transform:translateY(-2px)}}
+@media(prefers-reduced-motion:reduce){.home-service,.featured-project-card,.button{transition:none}.home-service:hover,.featured-project-card:hover,.button:hover{transform:none}}
+@media(max-width:700px){.human-section{grid-template-columns:1fr;margin-top:25px;margin-bottom:28px;padding:26px 20px;gap:20px}.human-intro h2{font-size:30px}.human-steps{gap:8px}.human-steps>div{padding:12px 0}.site-header .account-nav-link{color:#07334b}}
