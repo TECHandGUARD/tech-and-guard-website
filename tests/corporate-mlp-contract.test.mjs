@@ -16,11 +16,14 @@ test('corporate website retains all five approved services', () => {
 });
 
 test('home page renders the complete service catalogue', () => {
-  assert.match(source, /services\.map\(s\s*=>/);
+  const home = source.slice(source.indexOf('function Home()'), source.indexOf('function App()'));
+  assert.match(home, /services\.map\(\(s,i\)=>/);
 });
 
-test('contact form accurately describes mailto-only submission', () => {
-  assert.match(source, /This form prepares an email on your device/);
+test('contact supports direct enquiry and keeps an email fallback', () => {
+  assert.match(source, /<EnquiryForm kind="service"/);
+  const form = readFileSync(new URL('../src/EnquiryForm.tsx', import.meta.url), 'utf8');
+  assert.match(form, /Open email draft/);
   assert.match(source, /mailto:aneleq@techandguard\.co\.za/);
 });
 
