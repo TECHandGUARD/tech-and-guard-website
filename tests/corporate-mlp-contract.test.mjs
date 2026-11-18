@@ -17,7 +17,8 @@ test('corporate website retains all five approved services', () => {
 
 test('home page renders the complete service catalogue', () => {
   const home = source.slice(source.indexOf('function Home()'), source.indexOf('function App()'));
-  assert.match(home, /services\.map\(\(s,i\)=>/);
+  assert.match(home, /services\.map\(/);
+  assert.match(home, /encodeURIComponent\(service\.title\)/);
 });
 
 test('contact supports direct enquiry and keeps an email fallback', () => {
