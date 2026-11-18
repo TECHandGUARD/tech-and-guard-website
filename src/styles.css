@@ -274,3 +274,14 @@ body{background:#f3f8fb}
 .dawn-store :is(a,button,input,select,textarea):focus-visible{outline:3px solid #b76e32;outline-offset:3px}
 @media(max-width:700px){.dawn-store{padding-block:48px}.dawn-store .section-heading{display:block}.dawn-store .section-heading h2{font-size:40px}.dawn-store .catalogue-tools{padding:16px}.dawn-store .service-grid{gap:16px}.dawn-store .service .product-image{aspect-ratio:5/4}}
 @media(prefers-reduced-motion:reduce){.dawn-store .service{transition:none}.dawn-store .service:hover{transform:none}}
+
+
+/* Reliable catalogue media: missing or failed images never collapse the product layout. */
+.dawn-store .premium-product-media{position:relative;aspect-ratio:4/3;background:linear-gradient(145deg,#e9eef0,#dce4e9);display:grid;place-items:center;overflow:hidden}
+.dawn-store .premium-product-media .product-image{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;z-index:1;object-fit:contain}
+.dawn-store .premium-product-placeholder{color:#64778a;letter-spacing:.22em;font-size:12px;font-weight:800;text-align:center;padding:24px}
+.dawn-store .premium-product-price{display:block;color:#142335;font-size:clamp(19px,1.8vw,25px);letter-spacing:-.03em;margin:12px 0 4px;font-variant-numeric:tabular-nums}
+.dawn-store .premium-stock-status{font-size:13px;color:#5c6872}
+.dawn-store .service .button.ghost{border-radius:999px;min-height:44px}
+.dawn-store .service .button.ghost:disabled{opacity:.52;cursor:not-allowed}
+@media(max-width:700px){.dawn-store .premium-product-media{aspect-ratio:5/4}}
