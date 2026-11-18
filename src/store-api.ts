@@ -25,7 +25,8 @@ export async function storeRequest(path:string,options:RequestInit={}){
    if(path.startsWith('/auth/'))throw new Error('Sign-in failed. Check your email and password.');
    throw new Error('Store request failed. Please retry.');
   }
-  if(data===null&&response.status!==204&&options.method!=='PATCH'&&path!=='/rest/v1/rpc/corporate_set_staff')throw new Error('The store returned an empty response. Please retry.');
+  const noStaffRole=path==='/rest/v1/rpc/corporate_staff_role'&&body.trim()==='null';
+  if(data===null&&!noStaffRole&&response.status!==204&&options.method!=='PATCH'&&path!=='/rest/v1/rpc/corporate_set_staff')throw new Error('The store returned an empty response. Please retry.');
   return data;
  }catch(error){
   if(controller.signal.aborted)throw new Error(options.signal?.aborted?'Store request cancelled.':'Store request timed out. Please retry.');
@@ -36,4 +37,16 @@ export async function themeUpload(file:File){
  const path=crypto.randomUUID()+'.zip';
  await storeRequest('/storage/v1/object/corporate-theme-uploads/'+path,{method:'POST',body:file,headers:{'Content-Type':'application/zip'}});
  return path;
+}
+
+export async function uploadProductImage(file: File){
+ const extension = {'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[file.type];
+ if (!extension || file.size === 0 || file.size > 5 * 1024 * 1024) {
+  throw new Error('Choose a JPEG, PNG or WebP image up to 5 MB.');
+ }
+ const object = 'corporate-product-images/' + crypto.randomUUID() + '.' + extension;
+ await storeRequest('/storage/v1/object/' + object, {
+  method:'POST', body:file, headers:{'Content-Type':file.type},
+ });
+ return STORE_URL + '/storage/v1/object/public/' + object;
 }

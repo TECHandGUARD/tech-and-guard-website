@@ -249,3 +249,53 @@ body{background:#f3f8fb}
  .home-hero .hero-copy{width:56%}
  .home-hero .hero-photo{inset:0 0 0 36%;width:64%}
 }
+
+
+/* Premium commerce MVP: distinct editorial storefront, independent of corporate home. */
+.dawn-store{--store-ink:#142335;--store-accent:#b76e32;--store-line:#e4e0d8;background:#f8f7f3;color:var(--store-ink);padding-block:clamp(56px,7vw,108px)}
+.dawn-store .container{max-width:1240px}
+.dawn-store .section-heading{align-items:end;gap:32px;margin-bottom:32px}
+.dawn-store .section-heading .label{color:#95602f;letter-spacing:.18em;font-size:11px}
+.dawn-store .section-heading h2{font-size:clamp(36px,4.8vw,68px);letter-spacing:-.055em;line-height:1.04;color:#142335}
+.dawn-store .section-heading h2 span{color:#ad713e}
+.dawn-store .section-heading p{max-width:440px;color:#55616c;line-height:1.75}
+.dawn-store .store-journey{background:#fff;border:1px solid var(--store-line);border-radius:18px;padding:20px 24px;box-shadow:0 14px 40px #15293b08}
+.dawn-store .catalogue-tools{border:1px solid var(--store-line);background:#fff;border-radius:18px;padding:22px;gap:16px}
+.dawn-store .catalogue-tools input,.dawn-store .catalogue-tools select{background:#fcfcfb;border:1px solid #cbd3d8;border-radius:10px;min-height:46px;color:#142335}
+.dawn-store .service-grid{gap:24px;align-items:stretch}
+.dawn-store .service{background:#fff;border:1px solid var(--store-line);border-radius:18px;overflow:hidden;box-shadow:0 10px 35px #15293b0b;transition:transform .2s ease,box-shadow .2s ease;min-width:0}
+.dawn-store .service:hover{transform:translateY(-3px);box-shadow:0 18px 42px #15293b15}
+.dawn-store .service .product-image{width:100%;aspect-ratio:4/3;object-fit:contain;background:#f0f1ef;padding:18px;display:block}
+.dawn-store .service h3{font-size:clamp(18px,1.5vw,23px);letter-spacing:-.025em;color:#142335}
+.dawn-store .service p{color:#586674;line-height:1.65}
+.dawn-store .button.primary{background:#142335;color:#fff;border-color:#142335;border-radius:999px;min-height:46px}
+.dawn-store .button.primary:hover{background:#263e55}
+.dawn-store .button.secondary{border-radius:999px;border-color:#aebbc4;color:#142335}
+.dawn-store :is(a,button,input,select,textarea):focus-visible{outline:3px solid #b76e32;outline-offset:3px}
+@media(max-width:700px){.dawn-store{padding-block:48px}.dawn-store .section-heading{display:block}.dawn-store .section-heading h2{font-size:40px}.dawn-store .catalogue-tools{padding:16px}.dawn-store .service-grid{gap:16px}.dawn-store .service .product-image{aspect-ratio:5/4}}
+@media(prefers-reduced-motion:reduce){.dawn-store .service{transition:none}.dawn-store .service:hover{transform:none}}
+
+
+/* Reliable catalogue media: missing or failed images never collapse the product layout. */
+.dawn-store .premium-product-media{position:relative;aspect-ratio:4/3;background:linear-gradient(145deg,#e9eef0,#dce4e9);display:grid;place-items:center;overflow:hidden}
+.dawn-store .premium-product-media .product-image{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto;z-index:1;object-fit:contain}
+.dawn-store .premium-product-placeholder{color:#64778a;letter-spacing:.22em;font-size:12px;font-weight:800;text-align:center;padding:24px}
+.dawn-store .premium-product-price{display:block;color:#142335;font-size:clamp(19px,1.8vw,25px);letter-spacing:-.03em;margin:12px 0 4px;font-variant-numeric:tabular-nums}
+.dawn-store .premium-stock-status{font-size:13px;color:#5c6872}
+.dawn-store .service .button.ghost{border-radius:999px;min-height:44px}
+.dawn-store .service .button.ghost:disabled{opacity:.52;cursor:not-allowed}
+@media(max-width:700px){.dawn-store .premium-product-media{aspect-ratio:5/4}}
+
+.store-shortcuts{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin-bottom:22px}
+.dawn-store .product-card{display:flex;flex-direction:column}
+.product-card-actions{margin-top:auto}
+.enquiry-items{list-style:none;padding:0}
+.enquiry-items li{border-bottom:1px solid var(--store-line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px 20px;padding:12px 0}
+.enquiry-items small{display:block}
+.enquiry-quantity{display:flex;align-items:center;flex-wrap:wrap;gap:7px}
+.enquiry-quantity button{display:inline-grid;place-items:center;min-width:44px;min-height:44px;padding:0 9px;background:white;color:var(--store-ink);border:1px solid #aebbc4;border-radius:8px}
+.enquiry-quantity button:disabled{opacity:.55}
+.dawn-store [tabindex="-1"]{scroll-margin-top:105px}
+.dawn-store [tabindex="-1"]:focus-visible{outline:3px solid #95602f;outline-offset:5px}
+.enquiry-feedback:empty{margin:0}
+.enquiry-basket .actions{display:flex;flex-wrap:wrap;gap:10px}

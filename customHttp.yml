@@ -12,4 +12,4 @@ customHeaders:
       - key: Permissions-Policy
         value: camera=(), microphone=(), geolocation=()
       - key: Content-Security-Policy
-        value: "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://images.unsplash.com; connect-src 'self' https://vthjdkwfvbfryofsmtdb.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+        value: "default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://images.unsplash.com https://vthjdkwfvbfryofsmtdb.supabase.co/storage/v1/object/public/corporate-product-images/; connect-src 'self' https://vthjdkwfvbfryofsmtdb.supabase.co; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"

@@ -35,3 +35,11 @@ test('project case study does not present pilot as a completed rollout', () => {
   assert.match(source, /Live pilot/);
   assert.match(source, /Online checkout is not yet active/);
 });
+
+test('the public store offers an email enquiry without a customer sign-in or checkout', () => {
+  const store = readFileSync(new URL('../src/Store.tsx', import.meta.url), 'utf8');
+  assert.match(store, /mailto:/);
+  assert.match(store, /Email enquiry opens a draft/);
+  assert.doesNotMatch(store, /StoreCheckout|corporate_create_order_request|href="\/account\//);
+  assert.doesNotMatch(source, /className="account-nav-link"/);
+});
