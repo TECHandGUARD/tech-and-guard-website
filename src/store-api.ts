@@ -25,7 +25,8 @@ export async function storeRequest(path:string,options:RequestInit={}){
    if(path.startsWith('/auth/'))throw new Error('Sign-in failed. Check your email and password.');
    throw new Error('Store request failed. Please retry.');
   }
-  if(data===null&&response.status!==204&&options.method!=='PATCH'&&path!=='/rest/v1/rpc/corporate_set_staff')throw new Error('The store returned an empty response. Please retry.');
+  const noStaffRole=path==='/rest/v1/rpc/corporate_staff_role'&&body.trim()==='null';
+  if(data===null&&!noStaffRole&&response.status!==204&&options.method!=='PATCH'&&path!=='/rest/v1/rpc/corporate_set_staff')throw new Error('The store returned an empty response. Please retry.');
   return data;
  }catch(error){
   if(controller.signal.aborted)throw new Error(options.signal?.aborted?'Store request cancelled.':'Store request timed out. Please retry.');
