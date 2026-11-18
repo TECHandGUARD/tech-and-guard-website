@@ -29,3 +29,28 @@
 .admin-heading-description,.admin-app .store-panel p,.admin-app .admin-page-description,.admin-stat small,.admin-app .sku,.admin-quick-actions small,.admin-definition dt,.admin-callout p,.admin-workspace-footer,.admin-workspace-footer span:first-child,.admin-breadcrumb,.admin-collapse-control,.admin-density-control,.admin-login-brand p,.admin-login-page .store-panel p{color:#65735a}
 .admin-content input::placeholder,.admin-content textarea::placeholder,.admin-login-page input::placeholder{color:#65735a}
 .admin-app .store-table th{color:#637255}.admin-eyebrow,.admin-login-brand .label{color:#7c6138}
+
+
+/* Executive workspace MVP: calm, information-first, deliberately separate from storefront. */
+.admin-app{--executive-navy:#101e31;--executive-blue:#243e59;--executive-line:#dfe5ec;--executive-surface:#fff;background:#f3f6fa;color:#1b2b3d}
+.admin-app .admin-sidebar{background:#101e31;color:#eaf1f8;border-right:1px solid #30445c}
+.admin-app .admin-brand{border-bottom:1px solid #30445c}
+.admin-app .admin-brand-mark{background:#233c58;color:#f0f6fc;border:1px solid #4d6681}
+.admin-app .admin-nav-item{border-radius:10px}
+.admin-app .admin-nav-item:hover{background:#263b55;color:#fff}
+.admin-app .admin-topbar{background:#fff;border-bottom:1px solid var(--executive-line)}
+.admin-app .admin-content{background:#f3f6fa}
+.admin-app h1,.admin-app h2,.admin-app h3{letter-spacing:-.035em;color:#17283d}
+.admin-app .admin-eyebrow{color:#7d6040;letter-spacing:.15em}
+.admin-app .store-panel,.admin-app .admin-stat,.admin-app .admin-callout{background:#fff;border:1px solid var(--executive-line);border-radius:16px;box-shadow:0 8px 30px #17283d08}
+.admin-app .admin-stat strong{color:#17283d;font-variant-numeric:tabular-nums}
+.admin-app .store-table{overflow-x:auto;border:1px solid var(--executive-line);border-radius:12px}
+.admin-app .store-table table{border-collapse:separate;border-spacing:0;min-width:620px}
+.admin-app .store-table th{background:#f1f5f9;color:#42566c;font-size:12px;letter-spacing:.04em}
+.admin-app .store-table tbody tr:hover{background:#f7f9fc}
+.admin-app :is(input,select,textarea){border-radius:9px;border-color:#c7d3df;background:#fff;color:#17283d}
+.admin-app .button.primary{background:#213c58;color:#fff;border-color:#213c58}
+.admin-app .button.primary:hover{background:#13283f}
+.admin-app :is(a,button,input,select,textarea):focus-visible{outline:3px solid #bd874b;outline-offset:2px}
+.admin-app .admin-heading-description,.admin-app .store-panel p,.admin-app .admin-page-description,.admin-app .sku,.admin-app .admin-workspace-footer{color:#536477}
+@media(max-width:760px){.admin-app .admin-content{padding:24px 16px}.admin-app .store-panel{padding:20px 16px}.admin-app .store-table{-webkit-overflow-scrolling:touch}}
