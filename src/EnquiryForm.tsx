@@ -1,6 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
 import {storeRequest} from './store-api';
-import {onlineStoreService,storeThemeChoices} from './store-themes';
+import {onlineStoreService,resolveTheme,themeChoices} from './store-themes';
 
 type Line={sku:string;quantity:number};
 type Props={
@@ -18,13 +18,14 @@ export function EnquiryForm({kind,items=[],topics=[],initialTopic='',initialThem
  const [email,setEmail]=useState('');
  const [topic,setTopic]=useState(topics.includes(initialTopic)?initialTopic:'');
  const [message,setMessage]=useState('');
- const [theme,setTheme]=useState(storeThemeChoices.some(choice=>choice.id===initialTheme)?initialTheme:'');
+ const [theme,setTheme]=useState(resolveTheme(initialTopic,initialTheme));
  const [business,setBusiness]=useState('');
  const [catalogueSize,setCatalogueSize]=useState('');
  const [timeline,setTimeline]=useState('');
  const [budget,setBudget]=useState('');
  const isStoreBrief=kind==='service'&&topic===onlineStoreService;
- const themeName=storeThemeChoices.find(choice=>choice.id===theme)?.name;
+ const choices=kind==='service'?themeChoices(topic):[];
+ const themeName=choices.find(choice=>choice.id===theme)?.name;
  const projectMessage=isStoreBrief?[
   themeName&&'Store theme: '+themeName,
   business.trim()&&'Business: '+business.trim(),
@@ -32,7 +33,7 @@ export function EnquiryForm({kind,items=[],topics=[],initialTopic='',initialThem
   timeline.trim()&&'Target launch: '+timeline.trim(),
   budget.trim()&&'Budget: '+budget.trim(),
   message.trim()
- ].filter(Boolean).join('\n'):message.trim();
+ ].filter(Boolean).join('\n'):[themeName&&'Design theme: '+themeName,message.trim()].filter(Boolean).join('\n');
  const [busy,setBusy]=useState(false);
  const [feedback,setFeedback]=useState('');
  const [reference,setReference]=useState('');
@@ -57,6 +58,7 @@ export function EnquiryForm({kind,items=[],topics=[],initialTopic='',initialThem
   if(isStoreBrief&&(!business.trim()||!themeName||message.length>1500)){
    setFeedback('Choose a theme, enter your business name, and keep project details within 1,500 characters.');return;
   }
+  if(projectMessage.length>2000){setFeedback('Shorten your project details to fit the enquiry.');return;}
   submitting.current=true;
   setBusy(true);
   setFeedback('');
@@ -81,14 +83,14 @@ export function EnquiryForm({kind,items=[],topics=[],initialTopic='',initialThem
    <label>Your name<input required autoComplete="name" maxLength={120} value={name} onChange={event=>setName(event.target.value)}/></label>
    <label>Your email<input required type="email" autoComplete="email" maxLength={254} value={email} onChange={event=>setEmail(event.target.value)}/></label>
   </div>
-  {kind==='service'&&<label>What do you need?<select value={topic} onChange={event=>setTopic(event.target.value)}>
+  {kind==='service'&&<label>What do you need?<select value={topic} onChange={event=>{setTopic(event.target.value);setTheme('');}}>
    <option value="">Choose a service</option>{topics.map(option=><option key={option}>{option}</option>)}
   </select></label>}
-  {isStoreBrief&&<>
-   <label>Store theme<select required value={theme} onChange={event=>setTheme(event.target.value)}>
+  {choices.length>0&&<label>{isStoreBrief?'Store theme':'Design theme'}<select required={isStoreBrief} value={theme} onChange={event=>setTheme(event.target.value)}>
     <option value="">Choose a theme</option>
-    {storeThemeChoices.map(choice=><option key={choice.id} value={choice.id}>{choice.name}</option>)}
-   </select></label>
+    {choices.map(choice=><option key={choice.id} value={choice.id}>{choice.name}</option>)}
+   </select></label>}
+  {isStoreBrief&&<>
    <div className="form-row">
     <label>Business name<input required maxLength={120} value={business} onChange={event=>setBusiness(event.target.value)}/></label>
     <label>Approximate catalogue size<select value={catalogueSize} onChange={event=>setCatalogueSize(event.target.value)}>
@@ -102,7 +104,7 @@ export function EnquiryForm({kind,items=[],topics=[],initialTopic='',initialThem
    </div>
   </>}
   <label>{kind==='service'?'Project details':'Town or suburb and any questions'}
-   <textarea required rows={4} maxLength={isStoreBrief?1500:2000} value={message} onChange={event=>setMessage(event.target.value)}/>
+   <textarea required rows={4} maxLength={isStoreBrief?1500:themeName?2000-('Design theme: '+themeName+'\n').length:2000} value={message} onChange={event=>setMessage(event.target.value)}/>
   </label>
   <p>We use these details to reply about your enquiry. Please leave out payment and identity details.</p>
   {feedback&&<p role="alert">{feedback}</p>}
