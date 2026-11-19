@@ -48,7 +48,7 @@ function ThemePage({storeOnly=false}:{storeOnly?:boolean}){
  },[]);
  return <>
   <Intro label="DESIGN THEMES" title={storeOnly?'Find a starting point for your store.':'Find a design that fits your project.'}
-   text="Explore sample designs and choose a direction for your project enquiry."/>
+   text="Open a full demo, browse its pages and try your own styling before choosing a design for your project."/>
   <StoreThemes service={storeOnly?onlineStoreService:undefined}/>
  </>;
 }

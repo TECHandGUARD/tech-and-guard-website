@@ -1,15 +1,23 @@
 """Test the built design gallery with a local HTTP server and isolated enquiry fixtures."""
 
 from functools import partial
+from os import environ
+import re
+import sys
+from time import monotonic, sleep
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from threading import Thread
 from urllib.parse import unquote, urlsplit
+from urllib.error import URLError
+from urllib.request import urlopen
 
 from playwright.sync_api import expect, sync_playwright
 
 
 FIXTURE = "https://themebrowserfixture.supabase.co"
+PUBLIC_SITE = "https://www.techandguard.co.za"
+PUBLIC_ENQUIRIES = "https://vthjdkwfvbfryofsmtdb.supabase.co"
 DIST = Path(__file__).resolve().parents[1] / "dist"
 THEMES = [
     ("Modern Corporate", "Business websites", "modern-corporate"),
@@ -27,12 +35,13 @@ class StaticHandler(SimpleHTTPRequestHandler):
 
 def verify_full_theme(page, base_url, name, theme_id):
     page.goto(base_url + "/design-themes/")
-    page.get_by_role("link", name="Explore " + name, exact=True).click()
+    page.get_by_role("link", name="Open interactive demo for " + name, exact=True).click()
     experience = page.locator(".experience-site")
     expect(page.get_by_role("heading", name=name, level=1)).to_be_visible()
     navigation = page.get_by_role("navigation", name="Theme pages")
     links = navigation.get_by_role("link")
-    expect(links).to_have_count(4)
+    expect(links).to_have_count(5 if theme_id == "warm-editorial" else 4)
+    expect(experience.locator(".experience-story h3")).to_be_visible()
     destinations = [link.get_attribute("href") for link in links.all()]
 
     page.get_by_text("Customise this theme", exact=True).click()
@@ -82,8 +91,14 @@ def verify_full_theme(page, base_url, name, theme_id):
     else:
         if theme_id in {"warm-editorial", "clean-premium-retail"}:
             navigation.get_by_role("link", name="Collection" if theme_id == "warm-editorial" else "Catalogue").click()
-            page.get_by_label("Category").select_option("Decor" if theme_id == "warm-editorial" else "Audio")
-            expect(experience.get_by_role("link", name="View small sculptural vessel" if theme_id == "warm-editorial" else "View wireless headphones")).to_be_visible()
+            page.get_by_label("Category").select_option("Body" if theme_id == "warm-editorial" else "Audio")
+            expect(experience.get_by_role("link", name="View body ritual set" if theme_id == "warm-editorial" else "View wireless headphones")).to_be_visible()
+        if theme_id == "warm-editorial":
+            navigation.get_by_role("link", name="Treatments").click()
+            page.get_by_role("button", name="Select Rest and restore").click()
+            page.get_by_label("Sample appointment time").select_option("Saturday at 09:00")
+            page.get_by_role("button", name="Try booking a treatment").click()
+            expect(page.get_by_role("status")).to_contain_text("Rest and restore on Saturday at 09:00")
         navigation.get_by_role("link", name="Product", exact=True).click()
         if theme_id == "product-showcase":
             page.get_by_label("Finish").select_option("Sandstone")
@@ -96,7 +111,7 @@ def verify_full_theme(page, base_url, name, theme_id):
         expect(page.get_by_text("Your demo basket is empty.")).to_be_visible()
 
 
-def verify_gallery(browser, base_url, width):
+def verify_gallery(browser, base_url, width, enquiry_origin=FIXTURE):
     context = browser.new_context(
         viewport={"width": width, "height": 900}, service_workers="block"
     )
@@ -108,9 +123,9 @@ def verify_gallery(browser, base_url, width):
     def handle_request(route):
         url = urlsplit(route.request.url)
         origin = f"{url.scheme}://{url.netloc}"
-        if origin == base_url:
+        if origin == base_url and route.request.method in {"GET", "HEAD"}:
             route.continue_()
-        elif origin == FIXTURE:
+        elif origin == enquiry_origin:
             headers = {"access-control-allow-origin": base_url}
             if route.request.method == "OPTIONS":
                 headers.update({
@@ -153,13 +168,9 @@ def verify_gallery(browser, base_url, width):
             expect(card.locator("xpath=ancestor::section[1]").get_by_role(
                 "heading", name=service, exact=True
             )).to_be_visible()
-            card.get_by_text("Open " + name + " preview", exact=True).click()
-            last_option = card.get_by_role("button").last
-            last_option.click()
-            expect(last_option).to_have_attribute("aria-pressed", "true")
-            if theme_id == "bold-studio":
-                expect(card.get_by_text("Studio portfolio")).to_be_visible()
-                expect(card.get_by_text("Spring campaign")).to_have_count(0)
+            link = card.get_by_role("link", name="Open interactive demo for " + name, exact=True)
+            expect(link).to_have_attribute("href", "/design-themes/" + theme_id + "/")
+            expect(card.get_by_role("list", name=name + " pages")).to_be_visible()
             for image in card.locator("img").all():
                 image.scroll_into_view_if_needed()
                 image.evaluate("(img) => img.decode()")
@@ -205,12 +216,39 @@ def verify_gallery(browser, base_url, width):
         raise
     else:
         context.tracing.stop()
-        print(f"{width}px: verified five theme sites, all 20 pages, live editing, sample workflows and project enquiries.")
+        print(f"{width}px: verified five theme sites, all demo pages, live editing, sample workflows and project enquiries.")
     finally:
         context.close()
 
 
+def verify_live():
+    revision = environ.get("GITHUB_SHA", "")
+    if not re.fullmatch(r"[0-9a-f]{40}", revision):
+        raise SystemExit("A GitHub commit SHA is required for the live smoke test.")
+    deadline = monotonic() + 360
+    while monotonic() < deadline:
+        try:
+            with urlopen(PUBLIC_SITE + "/design-themes/?revision=" + revision, timeout=10) as response:
+                if '<meta name="release-revision" content="' + revision + '"/>' in response.read().decode():
+                    break
+        except (URLError, TimeoutError):
+            pass
+        sleep(10)
+    else:
+        raise SystemExit("The matching Amplify release did not reach the public gallery in time.")
+
+    print("Verifying public release " + revision, flush=True)
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch()
+        for width in (375, 1440):
+            verify_gallery(browser, PUBLIC_SITE, width, PUBLIC_ENQUIRIES)
+        browser.close()
+
+
 def main():
+    if sys.argv[1:] == ["--live"]:
+        verify_live()
+        return
     page = DIST / "design-themes" / "index.html"
     if FIXTURE not in page.read_text(encoding="utf-8"):
         raise SystemExit("Build with the isolated browser-test fixture before running this test.")

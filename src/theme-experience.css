@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Baskervville&display=swap');
 .experience { width: min(1440px, calc(100% - 2rem)); margin: 0 auto; padding: 1.5rem 0 2rem; }
 .experience-toolbar { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
 .experience-toolbar h1 { font-size: clamp(2rem, 4vw, 3rem); margin: .3rem 0 0; }
@@ -18,8 +19,6 @@
 .experience-site[data-accent=forest] { --accent: #226047; --accent-text: #fff; }
 .experience-site[data-accent=clay] { --accent: #8f3923; --accent-text: #fff; }
 .experience-site[data-accent=navy] { --accent: #253d78; --accent-text: #fff; }
-.experience-site[data-type=serif] { --demo-font: Georgia, serif; }
-.experience-site[data-type=sans] { --demo-font: system-ui, sans-serif; }
 .experience-site-header, .experience-footer { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem clamp(1rem, 4vw, 4rem); background: var(--panel-surface); }
 .experience-site-header { border-bottom: 1px solid #87929a77; }
 .experience-site-header a, .experience-section a { color: inherit; }
@@ -69,3 +68,43 @@
  .experience-site-header { gap: .5rem; }
  .experience-site-header nav a { padding-inline: .35rem; }
 }
+
+.experience-toolbar p { margin: .4rem 0 0; font-size: .95rem; }
+.experience-editor summary { color: #163d63; min-height: 44px; }
+.experience-editor { background: #f5f8fb; }
+.experience-editor input, .experience-editor select { margin: 0; }
+.experience-eyebrow { display: block; margin-bottom: .8rem; font-size: .875rem; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; }
+.experience-story { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 1.5rem 3rem; padding: clamp(2.5rem, 6vw, 6rem) clamp(1.3rem, 6vw, 6rem); border-top: 1px solid #87929a77; }
+.experience-story h3 { max-width: 18ch; margin: 0; color: inherit; font: 600 clamp(1.8rem, 4vw, 3.3rem)/1.1 var(--demo-font); letter-spacing: -.035em; }
+.experience-story p, .experience-section p { color: inherit; }
+.experience-story p { max-width: 46ch; font-size: clamp(1rem, 1.4vw, 1.15rem); }
+.experience-story a, .experience-footer a { text-decoration: underline; text-underline-offset: .25em; font-weight: 700; }
+.experience-product-card { padding: 0; overflow: hidden; }
+.experience-product-card img { display: block; width: 100%; height: auto; aspect-ratio: 1.55; object-fit: cover; }
+.experience-product-card > div { padding: 1.25rem; }
+.experience-appointment { margin-top: 1.5rem; }
+.experience-footer span { font-size: .875rem; }
+.experience-site.demo-warm-editorial { --signature: #713f34; --demo-bg: #f6e9dc; --demo-ink: #482b24; --panel-surface: #fcf6ef; --demo-font: 'Baskervville', Georgia, serif; }
+.demo-warm-editorial .experience-home { padding-block: 0; padding-right: 0; gap: 2rem; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); }
+.demo-warm-editorial .experience-home > div { padding: clamp(2rem,5vw,5rem) 0; }
+.demo-warm-editorial .experience-home img { aspect-ratio: 1.1; border-radius: 0; }
+.demo-warm-editorial .experience-home h2 { font-weight: 400; }
+.demo-warm-editorial .experience-story { background: #e9d4c4; }
+.demo-warm-editorial .experience-product-card, .demo-warm-editorial .experience-action { border-radius: 2px; }
+.demo-clean-premium-retail .experience-story { background: #d9e8de; }
+.demo-clean-premium-retail .experience-panel { border-radius: 16px; }
+.demo-product-showcase .experience-story { background: #2b2635; }
+.demo-product-showcase .experience-home h2 { font-weight: 500; }
+.demo-modern-corporate .experience-story { background: #dbe6f0; }
+.demo-bold-studio .experience-story { background: #fff3cb; border-block: 3px solid currentColor; }
+.demo-bold-studio .experience-panel { border: 1px solid currentColor; border-radius: 0; }
+@media (max-width:680px) {
+ .experience-story { grid-template-columns: 1fr; gap: 1rem; }
+ .demo-warm-editorial .experience-home { grid-template-columns: 1fr; padding-inline: 0; gap: 0; }
+ .demo-warm-editorial .experience-home > div { padding: 2rem 1.25rem; }
+ .demo-warm-editorial .experience-home img { aspect-ratio: 1.35; }
+ .experience-toolbar > .button { min-height: 44px; }
+}
+.experience-site[data-type=serif] { --demo-font: Georgia, serif; }
+.experience-site[data-type=sans] { --demo-font: system-ui, sans-serif; }
+.experience-action[aria-pressed=true] { border-color: var(--accent); color: var(--accent); background: var(--panel-surface); }

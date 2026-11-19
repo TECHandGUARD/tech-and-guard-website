@@ -13,31 +13,31 @@ export const designThemes = [
   id:'modern-corporate', service:businessWebsiteService, name:'Modern Corporate',
   description:'A confident company website for professional firms that need to explain their services and turn interest into enquiries.',
   brand:'Meridian Advisory', headline:'Clarity for your next decision.', image:'/images/themes/corporate.webp',
-  sections:['Advisory','Operations','Growth planning'],
+  audience:'Strategy and operations advisory',
  },
  {
   id:'warm-editorial', service:onlineStoreService, name:'Warm Editorial',
-  description:'An image-led storefront for curated collections, everyday essentials and lifestyle products.',
-  brand:'Fieldnote Goods', headline:'Good things for the everyday.', image:'/images/themes/editorial.webp',
-  sections:['Tableware','Serving pieces','Decor'],
+  description:'A boutique spa and beauty shop that introduces in-studio treatments, then helps guests build a simple skincare ritual at home.',
+  brand:'Maison Serein', headline:'Make time for the ritual.', image:'/images/themes/spa-ritual.webp',
+  audience:'Skin studio and beauty shop',
  },
  {
   id:'clean-premium-retail', service:onlineStoreService, name:'Clean Premium Retail',
   description:'A bright catalogue that keeps categories and product information easy to scan.',
   brand:'Common Ground', headline:'Essentials for a better setup.', image:'/images/store-editorial.webp',
-  sections:['Power','Audio','Desk accessories'],
+  audience:'Everyday tech and accessories',
  },
  {
   id:'product-showcase', service:onlineStoreService, name:'Product Showcase',
   description:'A focused launch storefront for a flagship product, a capsule collection or a limited release.',
   brand:'Form & Frequency', headline:'Designed around sound.', image:'/images/themes/audio.webp',
-  sections:['Sound','Fit & finish','Specifications'],
+  audience:'Personal audio',
  },
  {
   id:'bold-studio', service:customApplicationService, name:'Bold Studio',
   description:'A creative project workspace with high-contrast status labels and approvals close at hand.',
   brand:'Studio North', headline:'Project workspace', image:'',
-  sections:['All projects','Needs review','Approved'],
+  audience:'Creative project workspace',
  },
 ] as const;
 

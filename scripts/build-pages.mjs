@@ -14,7 +14,9 @@ for (const theme of designThemes) {
  }
 }
 const policy=`default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://images.unsplash.com ${storeUrl}/storage/v1/object/public/corporate-product-images/; connect-src 'self' ${storeUrl}; object-src 'none'; base-uri 'none'; form-action 'self'; upgrade-insecure-requests`;
-const html=fs.readFileSync('dist/index.html','utf8').replace('</head>',`<meta http-equiv="Content-Security-Policy" content="${policy}"/><meta name="referrer" content="no-referrer"/></head>`);
+const revision = process.env.AWS_COMMIT_ID ?? '';
+const releaseMeta = /^[0-9a-f]{40}$/.test(revision) ? `<meta name="release-revision" content="${revision}"/>` : '';
+const html=fs.readFileSync('dist/index.html','utf8').replace('</head>',`<meta http-equiv="Content-Security-Policy" content="${policy}"/><meta name="referrer" content="no-referrer"/>${releaseMeta}</head>`);
 fs.writeFileSync('dist/index.html',html.replace('</head>','<link rel="canonical" href="https://www.techandguard.co.za/"/></head>'));
 for (const [page, [title, description]] of Object.entries(pages)) {
  const url = `https://www.techandguard.co.za/${page}/`;
