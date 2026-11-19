@@ -21,20 +21,14 @@
 .store-theme-copy { padding: 1.25rem; }
 .store-theme-copy h3 { margin: 0; }
 .store-theme-copy > p { min-height: 3.5em; }
-.theme-demo { margin-bottom: 1rem; border-top: 1px solid var(--border); }
-.theme-demo summary { padding-block: .85rem; cursor: pointer; color: var(--ink); font-weight: 600; }
-.demo-surface { padding: 1rem; border-radius: 8px; }
-.demo-hero { display: grid; gap: .75rem; padding-block: .8rem; }
-.demo-hero h4 { font: 700 1.3rem/1.15 var(--demo-font); color: inherit; margin: 0; }
-.demo-hero img { width: 100%; height: auto; aspect-ratio: 2.1; object-fit: cover; border-radius: 5px; }
-.demo-modern-corporate .demo-hero,.demo-warm-editorial .demo-hero { grid-template-columns: 1fr 1fr; align-items: center; }
-.demo-product-showcase .demo-hero { text-align: center; }
-.demo-product-showcase .demo-hero img { aspect-ratio: 1.5; }
-.demo-options { display: flex; gap: .4rem; flex-wrap: wrap; }
-.demo-options button { color: inherit; background: transparent; font: inherit; font-size: .875rem; border: 1px solid currentColor; border-radius: 4px; padding: .4rem .55rem; min-height: 44px; cursor: pointer; }
-.demo-options button[aria-pressed=true] { background: var(--demo-ink); color: var(--demo-bg); border-color: var(--demo-ink); }
-.demo-options button:focus-visible, .theme-demo summary:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
-.demo-result p,.demo-result ul { margin: .65rem 0 0; font-size: .875rem; }
-.demo-result span { display: block; }
-.demo-result ul { list-style: none; padding: 0; }
-.demo-result li { padding: .4rem 0; border-top: 1px solid currentColor; }
+.theme-card-actions { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; margin-top: 1rem; }
+.theme-card-actions a { min-height: 44px; display: inline-flex; align-items: center; }
+
+.theme-cover { display: grid; text-decoration: none; min-height: 14rem; }
+.theme-cover:focus-visible { outline-offset: -5px; outline-color: #fff; }
+.theme-cover img { transition: transform .35s ease; }
+.theme-cover:hover img { transform: scale(1.035); }
+.theme-cover.demo-bold-studio:focus-visible { outline-color: #302511; }
+.theme-page-links { margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .3rem .55rem; list-style: none; }
+.theme-page-links a { display: inline-flex; align-items: center; min-height: 40px; padding: .25rem .45rem; color: var(--ink); font-size: .875rem; text-decoration: underline; text-underline-offset: 3px; }
+.theme-page-links a:hover { background: #eef2f7; }
