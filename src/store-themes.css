@@ -38,3 +38,7 @@
 .demo-result span { display: block; }
 .demo-result ul { list-style: none; padding: 0; }
 .demo-result li { padding: .4rem 0; border-top: 1px solid currentColor; }
+
+.theme-card-actions { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; margin-block: .8rem 1rem; }
+.theme-card-actions a { min-height: 44px; display: inline-flex; align-items: center; }
+.theme-card-actions + .theme-demo { margin-bottom: 0; }

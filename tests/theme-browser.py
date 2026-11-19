@@ -25,6 +25,77 @@ class StaticHandler(SimpleHTTPRequestHandler):
         pass
 
 
+def verify_full_theme(page, base_url, name, theme_id):
+    page.goto(base_url + "/design-themes/")
+    page.get_by_role("link", name="Explore " + name, exact=True).click()
+    experience = page.locator(".experience-site")
+    expect(page.get_by_role("heading", name=name, level=1)).to_be_visible()
+    navigation = page.get_by_role("navigation", name="Theme pages")
+    links = navigation.get_by_role("link")
+    expect(links).to_have_count(4)
+    destinations = [link.get_attribute("href") for link in links.all()]
+
+    page.get_by_text("Customise this theme", exact=True).click()
+    page.get_by_label("Brand name").fill("Example design")
+    page.get_by_label("Main headline").fill("A new headline for this demo")
+    page.get_by_label("Accent colour").select_option("clay")
+    page.get_by_label("Heading style").select_option("serif")
+    expect(experience.get_by_role("heading", name="A new headline for this demo")).to_be_visible()
+    expect(experience).to_have_attribute("data-accent", "clay")
+    expect(experience).to_have_attribute("data-type", "serif")
+    if theme_id != "bold-studio":
+        picture = "/images/themes/editorial.webp" if theme_id == "modern-corporate" else "/images/themes/corporate.webp"
+        page.get_by_label("Hero image").select_option(picture)
+        expect(experience.locator(".experience-hero img")).to_have_attribute("src", picture)
+
+    for path in destinations[1:]:
+        navigation.locator(f'a[href="{path}"]').click()
+        expect(page).to_have_url(base_url + path)
+        expect(experience.get_by_role("link", name="Example design")).to_be_visible()
+        expect(experience).to_have_attribute("data-accent", "clay")
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), path
+
+    page.get_by_text("Customise this theme", exact=True).click()
+    page.get_by_label("Page heading").fill("A customised inner page")
+    page.get_by_label("Page introduction").fill("Customers can edit this introduction.")
+    expect(experience.get_by_role("heading", name="A customised inner page")).to_be_visible()
+    expect(experience.get_by_text("Customers can edit this introduction.")).to_be_visible()
+    navigation.get_by_role("link").first.click()
+    expect(experience.get_by_role("heading", name="A new headline for this demo")).to_be_visible()
+    navigation.get_by_role("link").last.click()
+    expect(experience.get_by_role("heading", name="A customised inner page")).to_be_visible()
+    page.get_by_text("Customise this theme", exact=True).click()
+    page.get_by_role("button", name="Reset customisation").click()
+    expect(experience.get_by_role("heading", name="A customised inner page")).to_have_count(0)
+    expect(experience).to_have_attribute("data-accent", "signature")
+
+    if theme_id == "modern-corporate":
+        page.get_by_label("Example name").fill("Example customer")
+        page.get_by_label("Example message").fill("A demo enquiry")
+        page.get_by_role("button", name="Try example enquiry").click()
+        expect(page.get_by_text("Example enquiry complete. No message was sent.")).to_be_visible()
+    elif theme_id == "bold-studio":
+        navigation.get_by_role("link", name="Approvals").click()
+        page.get_by_role("button", name="Approve Spring campaign").click()
+        navigation.get_by_role("link", name="Approved", exact=True).click()
+        expect(experience.get_by_text("Spring campaign")).to_be_visible()
+    else:
+        if theme_id in {"warm-editorial", "clean-premium-retail"}:
+            navigation.get_by_role("link", name="Collection" if theme_id == "warm-editorial" else "Catalogue").click()
+            page.get_by_label("Category").select_option("Decor" if theme_id == "warm-editorial" else "Audio")
+            expect(experience.get_by_role("link", name="View small sculptural vessel" if theme_id == "warm-editorial" else "View wireless headphones")).to_be_visible()
+        navigation.get_by_role("link", name="Product", exact=True).click()
+        if theme_id == "product-showcase":
+            page.get_by_label("Finish").select_option("Sandstone")
+        page.get_by_role("button", name="Add to demo basket").click()
+        navigation.get_by_role("link", name="Basket (1)", exact=True).click()
+        expect(page.get_by_text("Quantity 1")).to_be_visible()
+        if theme_id == "product-showcase":
+            expect(page.get_by_text("Studio Wireless · Sandstone")).to_be_visible()
+        page.get_by_role("button", name="Remove one").click()
+        expect(page.get_by_text("Your demo basket is empty.")).to_be_visible()
+
+
 def verify_gallery(browser, base_url, width):
     context = browser.new_context(
         viewport={"width": width, "height": 900}, service_workers="block"
@@ -111,6 +182,8 @@ def verify_gallery(browser, base_url, width):
             payload = submissions[-1]
             assert payload["p_topic"] == service and name in payload["p_message"], name
 
+        for name, _, theme_id in THEMES:
+            verify_full_theme(page, base_url, name, theme_id)
         assert len(submissions) == len(THEMES)
         page.goto(base_url + "/services/")
         service_links = page.get_by_role("link", name="Explore design themes")
@@ -132,7 +205,7 @@ def verify_gallery(browser, base_url, width):
         raise
     else:
         context.tracing.stop()
-        print(f"{width}px: verified all five previews, enquiry payloads, email drafts and receipts.")
+        print(f"{width}px: verified five theme sites, all 20 pages, live editing, sample workflows and project enquiries.")
     finally:
         context.close()
 

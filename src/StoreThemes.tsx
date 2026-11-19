@@ -1,5 +1,6 @@
 import {useState} from 'react';
 import {designThemes, themeBriefLink, themeServices, type DesignTheme} from './store-themes';
+import {themeDemoUrl} from './theme-demo-content';
 import './store-themes.css';
 
 const projects = [
@@ -61,8 +62,11 @@ export function StoreThemes({service}:{service?:string}) {
      <div className="store-theme-copy">
       <h3>{theme.name}</h3>
       <p>{theme.description}</p>
+      <div className="theme-card-actions">
+       <a className="button primary" href={themeDemoUrl(theme.id)}>Explore {theme.name}</a>
+       <a className="text-link" href={themeBriefLink(theme.service,theme.id)}>Choose {theme.name}</a>
+      </div>
       <DesignPreview theme={theme}/>
-      <a className="button primary" href={themeBriefLink(theme.service,theme.id)}>Choose {theme.name}</a>
      </div>
     </article>)}
    </div>
