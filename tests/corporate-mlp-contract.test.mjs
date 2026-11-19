@@ -1,18 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { businessWebsiteService, customApplicationService, designThemes, onlineStoreService, resolveTheme, themeBriefLink, themeChoices, themeServices } from '../src/store-themes.ts';
 
 const source = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8');
 
 test('corporate website retains all five approved services', () => {
   for (const name of [
-    'Business websites',
-    'Independent online stores',
-    'Custom web applications',
     'Cloud & maintenance',
     'Technology consulting',
   ]) assert.ok(source.includes(name), `Missing approved service: ${name}`);
+  assert.equal(onlineStoreService, 'Independent online stores');
+  assert.equal(businessWebsiteService, 'Business websites');
+  assert.equal(customApplicationService, 'Custom web applications');
+  for (const service of ['businessWebsiteService', 'onlineStoreService', 'customApplicationService']) {
+    assert.ok(source.includes('title:' + service));
+  }
 });
 
 test('home page renders the complete service catalogue', () => {
@@ -45,4 +49,25 @@ test('the public store offers an email enquiry without a customer sign-in or che
   assert.match(store, /Email enquiry opens a draft/);
   assert.doesNotMatch(store, /StoreCheckout|corporate_create_order_request|href="\/account\//);
   assert.doesNotMatch(source, /className="account-nav-link"/);
+});
+
+
+test('design themes carry the appropriate service and style into enquiries', () => {
+  const ids = designThemes.map(theme => theme.id);
+  assert.equal(ids.length, 5);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const {name} of themeServices) {
+    const choices = themeChoices(name);
+    assert.ok(choices.length > 1);
+    for (const {id} of choices) {
+      const link = new URL(themeBriefLink(name,id), 'https://example.com');
+      assert.equal(link.pathname, '/contact/');
+      assert.equal(link.searchParams.get('service'), name);
+      assert.equal(resolveTheme(name,link.searchParams.get('theme')), id);
+    }
+  }
+  assert.equal(resolveTheme(onlineStoreService, 'editorial'), 'warm-editorial');
+  assert.equal(resolveTheme(onlineStoreService, 'catalogue'), 'clean-premium-retail');
+  assert.equal(resolveTheme(customApplicationService, 'warm-editorial'), '');
+  assert.deepEqual(themeChoices('Technology consulting'), []);
 });

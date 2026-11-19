@@ -48,3 +48,38 @@ jobs:
           test -f dist/contact/index.html
           test -f dist/account/index.html
           test -f dist/admin/index.html
+          test -f dist/design-themes/index.html
+          test -f dist/store-themes/index.html
+
+  browser-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - name: Build isolated browser fixture
+        env:
+          VITE_STORE_ENV: staging
+          VITE_STORE_URL: https://themebrowserfixture.supabase.co
+          VITE_STORE_PUBLIC_KEY: sb_publishable_themebrowserfixture
+        run: npm run build
+      - name: Install Chromium headless shell
+        run: |
+          python -m pip install playwright==1.62.0
+          python -m playwright install --with-deps --only-shell chromium
+      - name: Verify design gallery and project enquiries
+        run: python tests/theme-browser.py
+      - name: Upload trace on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: theme-browser-traces
+          path: browser-test-results/
+          if-no-files-found: ignore
