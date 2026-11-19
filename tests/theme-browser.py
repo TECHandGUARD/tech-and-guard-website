@@ -98,7 +98,7 @@ def verify_gallery(browser, base_url, width):
             expect(page.get_by_label("What do you need?")).to_have_value(service)
             is_store = service == "Independent online stores"
             label = "Store theme" if is_store else "Design theme"
-            expect(page.get_by_label(label, exact=True)).to_have_value(theme_id)
+            expect(page.get_by_role("combobox", name=label, exact=True)).to_have_value(theme_id)
             email = page.get_by_role("link", name="Open email draft").get_attribute("href")
             assert name in unquote(email), name
             page.get_by_label("Your name").fill("Test User")
@@ -120,9 +120,9 @@ def verify_gallery(browser, base_url, width):
         page.goto(base_url + "/store-themes/")
         expect(page.locator(".store-theme-card")).to_have_count(3)
         page.goto(base_url + "/contact/?service=Independent+online+stores&theme=editorial")
-        expect(page.get_by_label("Store theme", exact=True)).to_have_value("warm-editorial")
+        expect(page.get_by_role("combobox", name="Store theme", exact=True)).to_have_value("warm-editorial")
         page.get_by_label("What do you need?").select_option("Custom web applications")
-        expect(page.get_by_label("Design theme", exact=True)).to_have_value("")
+        expect(page.get_by_role("combobox", name="Design theme", exact=True)).to_have_value("")
         assert not page_errors, page_errors
         assert not unexpected_requests, unexpected_requests
     except Exception:
