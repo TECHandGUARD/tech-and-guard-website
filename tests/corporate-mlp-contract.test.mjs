@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { onlineStoreService, storeBriefLink, storeThemes } from '../src/store-themes.ts';
 
 const source = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8');
@@ -8,11 +9,12 @@ const css = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8');
 test('corporate website retains all five approved services', () => {
   for (const name of [
     'Business websites',
-    'Independent online stores',
     'Custom web applications',
     'Cloud & maintenance',
     'Technology consulting',
   ]) assert.ok(source.includes(name), `Missing approved service: ${name}`);
+  assert.equal(onlineStoreService, 'Independent online stores');
+  assert.match(source, /title:onlineStoreService/);
 });
 
 test('home page renders the complete service catalogue', () => {
@@ -45,4 +47,16 @@ test('the public store offers an email enquiry without a customer sign-in or che
   assert.match(store, /Email enquiry opens a draft/);
   assert.doesNotMatch(store, /StoreCheckout|corporate_create_order_request|href="\/account\//);
   assert.doesNotMatch(source, /className="account-nav-link"/);
+});
+
+
+test('store themes carry a known style and service into the enquiry route', () => {
+  const ids = storeThemes.map(theme => theme.id);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const id of [...ids, 'recommend']) {
+    const link = new URL(storeBriefLink(id), 'https://example.com');
+    assert.equal(link.pathname, '/contact/');
+    assert.equal(link.searchParams.get('service'), onlineStoreService);
+    assert.equal(link.searchParams.get('theme'), id);
+  }
 });
