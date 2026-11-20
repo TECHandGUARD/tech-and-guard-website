@@ -18,6 +18,7 @@ from playwright.sync_api import expect, sync_playwright
 FIXTURE = "https://themebrowserfixture.supabase.co"
 PUBLIC_SITE = "https://www.techandguard.co.za"
 PUBLIC_ENQUIRIES = "https://vthjdkwfvbfryofsmtdb.supabase.co"
+CHROMIUM_EXECUTABLE = environ.get("CHROMIUM_EXECUTABLE_PATH")
 DIST = Path(__file__).resolve().parents[1] / "dist"
 THEMES = [
     ("Modern Corporate", "Business websites", "modern-corporate"),
@@ -152,6 +153,7 @@ def verify_gallery(browser, base_url, width, enquiry_origin=FIXTURE):
     )
     context.tracing.start(screenshots=True, snapshots=True)
     submissions = []
+    notifications = []
     page_errors = []
     unexpected_requests = []
 
@@ -175,6 +177,10 @@ def verify_gallery(browser, base_url, width, enquiry_origin=FIXTURE):
             elif route.request.method == "POST" and url.path == "/rest/v1/rpc/corporate_submit_enquiry":
                 submissions.append(route.request.post_data_json)
                 route.fulfill(json="theme-test-reference", headers=headers)
+            elif route.request.method == "POST" and url.path == "/functions/v1/store-enquiry-notification":
+                notifications.append(route.request.post_data_json)
+                notification_ok = len(notifications) != 1
+                route.fulfill(json={"sent": notification_ok, "configured": notification_ok}, headers=headers)
             else:
                 unexpected_requests.append(url.path)
                 route.abort()
@@ -229,12 +235,32 @@ def verify_gallery(browser, base_url, width, enquiry_origin=FIXTURE):
             page.get_by_label("Project details").fill("Testing the selected design direction.")
             page.get_by_role("button", name="Send enquiry").click()
             expect(page.get_by_role("heading", name="Enquiry received")).to_be_visible()
+            if len(notifications) == 1:
+                expect(page.get_by_text("Your enquiry is saved in our admin queue, but we couldn’t confirm an email alert. You can contact us directly below.")).to_be_visible()
+                expect(page.get_by_role("link", name="Continue on WhatsApp", exact=True)).to_be_visible()
+            else:
+                expect(page.get_by_text("The team email alert was accepted for delivery.")).to_be_visible()
             payload = submissions[-1]
             assert payload["p_topic"] == service and name in payload["p_message"], name
+
+        for route, title in [
+            ("terms", "Terms of use and sale"),
+            ("returns", "Returns, cancellations and refunds"),
+            ("delivery", "Delivery and collection"),
+            ("privacy", "Privacy notice"),
+        ]:
+            page.goto(base_url + "/" + route + "/")
+            expect(page.get_by_role("heading", name=title, exact=True)).to_be_visible()
+            expect(page.get_by_text("Pre-launch notice", exact=True)).to_be_visible()
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), route
 
         for name, _, theme_id in THEMES:
             verify_full_theme(page, base_url, name, theme_id)
         assert len(submissions) == len(THEMES)
+        assert len(notifications) == len(THEMES)
+        for submission, notification in zip(submissions, notifications):
+            assert notification["email"] == submission["p_email"]
+            assert notification["id"] == "theme-test-reference"
         page.goto(base_url + "/services/")
         service_links = page.get_by_role("link", name="Explore design themes")
         expect(service_links).to_have_count(3)
@@ -321,7 +347,7 @@ def verify_live():
 
     print("Verifying public release " + revision, flush=True)
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch()
+        browser = playwright.chromium.launch(executable_path=CHROMIUM_EXECUTABLE)
         for width in (375, 1440):
             verify_gallery(browser, PUBLIC_SITE, width, PUBLIC_ENQUIRIES)
             verify_live_store(browser, width)
@@ -341,7 +367,7 @@ def main():
         worker.start()
         try:
             with sync_playwright() as playwright:
-                browser = playwright.chromium.launch()
+                browser = playwright.chromium.launch(executable_path=CHROMIUM_EXECUTABLE)
                 for width in (375, 1440):
                     verify_gallery(browser, f"http://127.0.0.1:{server.server_port}", width)
                 browser.close()

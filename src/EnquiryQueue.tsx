@@ -2,12 +2,15 @@ import {useEffect,useRef,useState} from 'react';
 import {storeRequest} from './store-api';
 
 type Status='new'|'in_progress'|'closed';
+type NotificationStatus='not_configured'|'sending'|'sent'|'failed';
 type Enquiry={
  id:string;kind:'service'|'product';customer_name:string;email:string;topic:string;
  message:string;status:Status;assigned_to:string|null;created_at:string;updated_at:string;
+ notification_status:NotificationStatus;
  items:Array<{sku:string;title:string;quantity:number}>;
 };
 const labels:Record<Status,string>={new:'New',in_progress:'In progress',closed:'Closed'};
+const notificationLabels:Record<NotificationStatus,string>={not_configured:'Email alert not configured',sending:'Email alert sending',sent:'Email alert sent',failed:'Email alert failed'};
 const pageSize=50;
 
 export function EnquiryQueue({userId}:{userId:string}){
@@ -68,6 +71,7 @@ export function EnquiryQueue({userId}:{userId:string}){
    <div className="enquiry-queue-list">{rows.map(entry=><article key={entry.id} aria-labelledby={'enquiry-'+entry.id}>
     <header><h3 id={'enquiry-'+entry.id}>{entry.topic||(entry.kind==='product'?'Catalogue enquiry':'Service enquiry')}</h3>
      <p>{entry.kind==='product'?'Product':'Service'} · {labels[entry.status]} · {new Date(entry.created_at).toLocaleDateString('en-ZA')}</p></header>
+    <p className={'enquiry-notification-status enquiry-notification-'+entry.notification_status}>{notificationLabels[entry.notification_status]}</p>
     <p><strong>{entry.customer_name}</strong> · <a href={'mailto:'+encodeURIComponent(entry.email)+'?subject='+encodeURIComponent('Tech & GUARD enquiry '+entry.id)}>Reply by email</a></p>
     <p className="enquiry-message">{entry.message}</p>
     {entry.items.length>0&&<ul>{entry.items.map(item=><li key={item.sku}>{item.quantity} × {item.title} ({item.sku})</li>)}</ul>}

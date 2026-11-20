@@ -48,6 +48,10 @@ jobs:
           test -f dist/about/index.html
           test -f dist/store/index.html
           test -f dist/contact/index.html
+          test -f dist/terms/index.html
+          test -f dist/returns/index.html
+          test -f dist/delivery/index.html
+          test -f dist/privacy/index.html
           test -f dist/account/index.html
           test -f dist/admin/index.html
           test -f dist/design-themes/index.html

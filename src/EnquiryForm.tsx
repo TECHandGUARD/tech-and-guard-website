@@ -36,6 +36,7 @@ export function EnquiryForm({kind,items=[],topics=[],initialTopic='',initialThem
  const [busy,setBusy]=useState(false);
  const [feedback,setFeedback]=useState('');
  const [reference,setReference]=useState('');
+ const [notification,setNotification]=useState<'pending'|'sent'|'unavailable'>('pending');
  const attempt=useRef<{key:string;payload:string}|null>(null);
  const submitting=useRef(false);
  useEffect(()=>{
@@ -77,6 +78,13 @@ export function EnquiryForm({kind,items=[],topics=[],initialTopic='',initialThem
    const id=await storeRequest('/rest/v1/rpc/corporate_submit_enquiry',{method:'POST',body:JSON.stringify({...payload,p_key:attempt.current.key})});
    if(typeof id!=='string'||!id)throw new Error('The service did not confirm receipt. Retry or use email.');
    setReference(id);
+   setNotification('pending');
+   void storeRequest('/functions/v1/store-enquiry-notification',{
+    method:'POST',body:JSON.stringify({id,email:email.trim().toLowerCase()}),
+   }).then(result=>{
+    if(result&&typeof result==='object'&&'sent' in result&&result.sent===true)setNotification('sent');
+    else setNotification('unavailable');
+   }).catch(()=>setNotification('unavailable'));
   }catch(error){setFeedback(error instanceof Error?error.message:'Your enquiry could not be confirmed. Try again or use email.');}
   finally{submitting.current=false;setBusy(false);}
  }
@@ -84,6 +92,8 @@ export function EnquiryForm({kind,items=[],topics=[],initialTopic='',initialThem
   <h3>Enquiry received</h3>
   <p>We’ll review your enquiry and reply to <strong>{email}</strong>.</p>
   <p>Reference <code>{reference}</code></p>
+  {notification==='pending'?<p>We’re confirming the team’s email alert.</p>:notification==='sent'?<p>The team email alert was accepted for delivery.</p>:<p>Your enquiry is saved in our admin queue, but we couldn’t confirm an email alert. You can contact us directly below.</p>}
+  <div className="actions"><a className="button secondary" href={emailLink}>Email {companyEmail}</a><a className="button secondary" href={whatsAppEnquiryLink} target="_blank" rel="noopener noreferrer">Continue on WhatsApp</a></div>
  </section>;
 
  return <form className="contact-form guest-enquiry" onSubmit={event=>void send(event)}>
