@@ -65,6 +65,13 @@ export function MerchandiseCollection({theme,catalogue,full}:{theme:DesignTheme;
  </section>;
 }
 
+export function productPhoto(catalogue:ThemeCatalogue,product:DemoItem,finish:string) {
+ if(product.id==='studio-wireless'&&finish==='Sandstone') {
+  return catalogue.items.find(item=>item.id==='studio-wireless-ivory')?.image??product.image;
+ }
+ return product.image;
+}
+
 export function relatedItems(catalogue:ThemeCatalogue,product:DemoItem) {
  const extras=product.category==='Headphones'?['Care and carry','Desk setup']:product.category==='Face'?['Cleansing','Accessories']:[product.category];
  const available=catalogue.items.filter(item=>item.id!==product.id);
@@ -75,13 +82,13 @@ export function DemoBasket({theme,catalogue,quantities,onChange}:{theme:DesignTh
  const [done,setDone]=useState(false);
  const lines=Object.entries(quantities).flatMap(([name,quantity])=>{
   const item=catalogue.items.find(candidate=>candidate.name===name||name.startsWith(candidate.name+' · '));
-  return item&&quantity>0?[{name,quantity,item}]:[];
+  return item&&quantity>0?[{name,quantity,item,finish:name.slice(item.name.length).replace(/^ · /,'')}]:[];
  });
  const subtotal=lines.reduce((total,{quantity,item})=>total+quantity*item.price,0);
  return <section className="experience-section">
   {lines.length===0?<p>Your demo basket is empty.</p>:<div className="merchandise-basket">
-   <ul className="experience-list merchandise-lines">{lines.map(({name,quantity,item})=><li key={name}>
-    <img src={item.image} width={100} height={80} alt=""/>
+   <ul className="experience-list merchandise-lines">{lines.map(({name,quantity,item,finish})=><li key={name}>
+    <img src={productPhoto(catalogue,item,finish)} width={100} height={80} alt=""/>
     <div><strong>{name}</strong><span>Quantity {quantity}</span></div>
     <strong>{demoPrice.format(item.price*quantity)}</strong>
     <div className="merchandise-quantity">

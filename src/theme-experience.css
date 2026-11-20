@@ -176,7 +176,7 @@
 .demo-product-showcase .merchandise-copy { background: #242637; }
 .demo-product-showcase .experience-home h2 { max-width: none; }
 .experience-site.demo-modern-corporate .experience-home { background: #112b42; color: #f0f4fa; }
-.demo-modern-corporate .experience-home .experience-action { background: #e5edf5; color: #183552; }
+.demo-modern-corporate[data-accent=signature] .experience-home .experience-action { background: #e5edf5; color: #183552; }
 .demo-modern-corporate .experience-home img { border-radius: 2px; }
 .experience-site.demo-bold-studio .experience-home { background: #f3d674; }
 .demo-bold-studio .experience-home img { border: 2px solid currentColor; border-radius: 0; }

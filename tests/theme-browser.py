@@ -136,6 +136,7 @@ def verify_full_theme(page, base_url, name, theme_id):
         expect(page.get_by_text("Quantity 1")).to_be_visible()
         if theme_id == "product-showcase":
             expect(page.get_by_text("Studio Wireless · Sandstone")).to_be_visible()
+            expect(experience.locator(".merchandise-lines img")).to_have_attribute("src", "/images/themes/catalogue/audio/studio-wireless-ivory.webp")
         page.get_by_role("button", name="Add one").click()
         expect(page.get_by_text("Quantity 2")).to_be_visible()
         page.get_by_role("button", name="Try demo checkout").click()

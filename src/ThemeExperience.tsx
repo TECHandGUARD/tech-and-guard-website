@@ -2,7 +2,7 @@ import {useEffect, useState, type FormEvent} from 'react';
 import {themeBriefLink, type DesignTheme} from './store-themes';
 import {advisoryOffers, demoAccents, demoPages, demoPhotoSrcSet, demoPictures, demoProjects, demoStories, spaTreatments, themeDemoUrl, type DemoPage} from './theme-demo-content';
 import {themeCatalogues} from './theme-catalogues';
-import {DemoBasket, MerchandiseCollection, MerchandiseGrid, cataloguePage, demoPrice, relatedItems} from './ThemeMerchandise';
+import {DemoBasket, MerchandiseCollection, MerchandiseGrid, cataloguePage, demoPrice, productPhoto, relatedItems} from './ThemeMerchandise';
 import './theme-experience.css';
 
 type PageCopy = {heading?:string; intro?:string};
@@ -14,9 +14,11 @@ function original(theme:DesignTheme):Model {
  return {style:{brand:theme.brand,accent:'signature',image:theme.image,type:'signature',copy:{}},basket:{},approved:['Studio portfolio']};
 }
 
+function sessionKey(theme:DesignTheme) { return 'theme-demo-v2:'+theme.id; }
+
 function load(theme:DesignTheme):Model {
  try {
-  const saved=sessionStorage.getItem('theme-demo:'+theme.id);
+  const saved=sessionStorage.getItem(sessionKey(theme));
   if(saved) {
    const value=JSON.parse(saved);
    const defaults=original(theme);
@@ -69,8 +71,8 @@ export function ThemeExperience({theme,current}:{theme:DesignTheme;current:DemoP
  const brand=model.style.brand.trim()||theme.brand;
 
  useEffect(()=>{
-  try { sessionStorage.setItem('theme-demo:'+theme.id,JSON.stringify(model)); } catch { /* Preview state remains in memory. */ }
- },[theme.id,model]);
+  try { sessionStorage.setItem(sessionKey(theme),JSON.stringify(model)); } catch { /* Preview state remains in memory. */ }
+ },[theme,model]);
  useEffect(()=>{
   const restore=(event:PageTransitionEvent)=>{if(event.persisted)setModel(load(theme));};
   window.addEventListener('pageshow',restore);
@@ -108,7 +110,7 @@ export function ThemeExperience({theme,current}:{theme:DesignTheme;current:DemoP
   'product-showcase':'Meet Studio Wireless. Over-ear listening for the commute, the desk and everything in between.',
   'bold-studio':'See what the team is working on, what needs a decision and what is ready to share.',
  }[theme.id]:productPage?product.detail:current.intro;
- const productImage=hasFinish&&finish==='Sandstone'?items[1].image:product?.image;
+ const productImage=catalogue&&product?productPhoto(catalogue,product,finish):'';
  const heroImage=home?model.style.image:productPage?model.style.image===theme.image?productImage??'':model.style.image:'';
  const offer=query.get('interest');
  const copy=model.style.copy[current.id];
