@@ -14,6 +14,8 @@ from urllib.request import urlopen
 
 from playwright.sync_api import expect, sync_playwright
 
+from quote_desk_browser import verify as verify_quote_desk
+
 
 FIXTURE = "https://themebrowserfixture.supabase.co"
 PUBLIC_SITE = "https://www.techandguard.co.za"
@@ -369,7 +371,9 @@ def main():
             with sync_playwright() as playwright:
                 browser = playwright.chromium.launch(executable_path=CHROMIUM_EXECUTABLE)
                 for width in (375, 1440):
-                    verify_gallery(browser, f"http://127.0.0.1:{server.server_port}", width)
+                    base_url = f"http://127.0.0.1:{server.server_port}"
+                    verify_gallery(browser, base_url, width)
+                    verify_quote_desk(browser, base_url, width)
                 browser.close()
         finally:
             server.shutdown()
