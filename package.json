@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build && node scripts/build-pages.mjs",
+    "build:admin": "tsc -b && tsc --noEmit -p apps/admin/tsconfig.json && vite build --config apps/admin/vite.config.ts",
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
