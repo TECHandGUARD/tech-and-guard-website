@@ -126,7 +126,7 @@ export function Store() {
     <div>
      <p className="showroom-brand">TECH &amp; GUARD STORE</p>
      <h1>Better gear for<br/>every day.</h1>
-      <p className="showroom-lead">Shop laptop bags, charging gear and audio. Add your favourites to the basket, then choose secure PayFast checkout or ask us a question.</p>
+      <p className="showroom-lead">Shop laptop bags, charging gear and audio. Add your favourites to the basket, then ask us to confirm availability. Secure PayFast checkout is being prepared.</p>
      <div className="actions">
       <a className="button primary" href="#catalogue">Browse products <ArrowDownRight size={18} aria-hidden="true"/></a>
       <button type="button" className="button secondary" onClick={() => basketHeading.current?.focus()}><ShoppingBag size={17} aria-hidden="true"/> Basket ({count})</button>
