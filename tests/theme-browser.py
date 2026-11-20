@@ -260,6 +260,46 @@ def verify_gallery(browser, base_url, width, enquiry_origin=FIXTURE):
         context.close()
 
 
+def verify_live_store(browser, width):
+    context = browser.new_context(
+        viewport={"width": width, "height": 900},
+        is_mobile=width <= 600,
+        has_touch=width <= 600,
+    )
+    page = context.new_page()
+    page.set_default_timeout(15000)
+    try:
+        page.goto(PUBLIC_SITE + "/store/", wait_until="networkidle")
+        heading = page.get_by_role("heading", name="Better gear for every day.")
+        expect(heading).to_be_visible()
+        cards = page.locator(".showroom-grid .product-card")
+        expect(cards).to_have_count(16)
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"store overflows at {width}px"
+        columns = page.locator(".showroom-grid").evaluate(
+            "el => getComputedStyle(el).gridTemplateColumns.split(' ').length"
+        )
+        assert columns <= 2 if width <= 600 else columns >= 2, (width, columns)
+        for image in page.locator(".product-card img").all():
+            image.scroll_into_view_if_needed()
+            image.evaluate("(img) => img.decode()")
+            assert image.evaluate("(img) => img.naturalWidth") >= 100, width
+        add_button = cards.first.get_by_role("button", name="Add to enquiry")
+        assert add_button.evaluate("(el) => el.getBoundingClientRect().height") >= 44, width
+        add_button.click()
+        expect(cards.first.get_by_text("1 in enquiry basket")).to_be_visible()
+        assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"basket overflows at {width}px"
+        print(f"{width}px: live store has 16 products, loaded product images, working basket and no horizontal overflow.")
+    except Exception:
+        reports = Path("browser-test-results")
+        reports.mkdir(exist_ok=True)
+        context.tracing.start(screenshots=True, snapshots=True)
+        context.tracing.stop(path=reports / f"store-mobile-{width}px.zip")
+        raise
+    finally:
+        context.close()
+
+
+
 def verify_live():
     revision = environ.get("GITHUB_SHA", "")
     if not re.fullmatch(r"[0-9a-f]{40}", revision):
@@ -281,6 +321,7 @@ def verify_live():
         browser = playwright.chromium.launch()
         for width in (375, 1440):
             verify_gallery(browser, PUBLIC_SITE, width, PUBLIC_ENQUIRIES)
+            verify_live_store(browser, width)
         browser.close()
 
 
