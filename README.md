@@ -18,7 +18,7 @@ Run `npm run build` to check types and create a static production build in `dist
 - Confirm trademark, company and project details; replace abstract CSS project art with approved screenshots when available.
 - Configure your domain, HTTPS and security headers at the hosting provider.
 
-The public site has no analytics scripts or secret keys. Enquiry drafts stay on the visitor’s device until they send their email. Store administrator authentication and private uploads use Supabase.
+The public site has no analytics scripts or secret keys. Email drafts opened by a visitor remain on their device until sent; submitted online enquiries are stored in the protected store queue. Store administrator authentication and private uploads use Supabase.
 
 ## Independent store imports
 
@@ -31,7 +31,7 @@ The catalogue and private uploads use the existing TECHandGUARD Supabase project
 - Admin sign-in uses existing Supabase Auth accounts. No account is automatically promoted. Owner grants are recorded in private `corporate_private.staff_grants`; the account email must be verified before access is usable. Owner administrators can assign and revoke verified staff from the admin page. Never use user-editable metadata to grant admin access.
 - Access tokens stay in memory, not local storage. Reload requires sign-in again; the Auth client refreshes an active memory session. Account registration/recovery requires configured Auth email delivery and redirect URLs.
 
-Validation: production build; CSV variant/price/error tests; malformed ZIP tests; hosted transactional checks for administrator import, draft isolation, publication and anonymous-write denial. Hosted test records were rolled back. The public site contains six public pages plus a protected store administrator page. The supplied Dawn theme informed the storefront styling; its Shopify Liquid runtime is not executed by this React app.
+Validation: production build; CSV variant/price/error tests; malformed ZIP tests; hosted transactional checks for administrator import, draft isolation, publication and anonymous-write denial. Hosted test records were rolled back. The public site includes customer policy pages plus protected account and store administrator routes. The supplied Dawn theme informed the storefront styling; its Shopify Liquid runtime is not executed by this React app.
 
 ## Executive review
 
