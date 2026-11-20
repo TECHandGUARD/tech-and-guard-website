@@ -17,7 +17,9 @@ Do not create policy language or delivery promises from this setup guide. The ow
 
 ## Supabase Edge Function secrets
 
-Set secrets in the Tech & GUARD Supabase project using the Dashboard or Supabase CLI. Never place the merchant key, passphrase, or service-role key in frontend variables, source control, or public build logs.
+Set secrets in the Tech & GUARD Supabase project using the Dashboard or Supabase CLI. Never place the merchant key, passphrase, Resend key, or service-role key in frontend variables, source control, or public build logs. The enquiry alert uses a separate verified Resend sending domain and can be enabled without turning on checkout.
+
+Set `RESEND_API_KEY` as a Supabase Edge Function secret to enable automated staff notifications for saved enquiries. The function sends from `enquiries@auth.techandguard.co.za` to `info@techandguard.co.za`, with the customer's email as Reply-To. If no key is configured, the enquiry is still saved and the receipt page offers direct email and WhatsApp follow-up. See [store policy and launch review](store-policy-review.md) for the customer-data flow and verification boundaries.
 
 ```sh
 PAYFAST_MODE=sandbox
