@@ -1,20 +1,24 @@
 import {useEffect, useState, type FormEvent} from 'react';
 import {themeBriefLink, type DesignTheme} from './store-themes';
-import {demoAccents, demoItems, demoPages, demoPictures, demoProjects, demoStories, spaTreatments, themeDemoUrl, type DemoPage} from './theme-demo-content';
+import {advisoryOffers, demoAccents, demoPages, demoPhotoSrcSet, demoPictures, demoProjects, demoStories, spaTreatments, themeDemoUrl, type DemoPage} from './theme-demo-content';
+import {themeCatalogues} from './theme-catalogues';
+import {DemoBasket, MerchandiseCollection, MerchandiseGrid, cataloguePage, demoPrice, productPhoto, relatedItems} from './ThemeMerchandise';
 import './theme-experience.css';
 
 type PageCopy = {heading?:string; intro?:string};
 type Style = {brand:string; accent:string; image:string; type:string; copy:Record<string,PageCopy>};
 type Model = {style:Style; basket:Record<string,number>; approved:string[]};
-const currency = new Intl.NumberFormat('en-ZA',{style:'currency',currency:'ZAR',maximumFractionDigits:0});
+const currency = demoPrice;
 
 function original(theme:DesignTheme):Model {
  return {style:{brand:theme.brand,accent:'signature',image:theme.image,type:'signature',copy:{}},basket:{},approved:['Studio portfolio']};
 }
 
+function sessionKey(theme:DesignTheme) { return 'theme-demo-v2:'+theme.id; }
+
 function load(theme:DesignTheme):Model {
  try {
-  const saved=sessionStorage.getItem('theme-demo:'+theme.id);
+  const saved=sessionStorage.getItem(sessionKey(theme));
   if(saved) {
    const value=JSON.parse(saved);
    const defaults=original(theme);
@@ -51,7 +55,6 @@ function DemoEditor({theme,style,page,heading,intro,onChange,onReset}:{theme:Des
 
 export function ThemeExperience({theme,current}:{theme:DesignTheme;current:DemoPage}) {
  const [model,setModel]=useState(()=>load(theme));
- const [category,setCategory]=useState('All');
  const [finish,setFinish]=useState('Midnight');
  const [notice,setNotice]=useState('');
  const [treatment,setTreatment]=useState<string>(spaTreatments[0].name);
@@ -60,15 +63,16 @@ export function ThemeExperience({theme,current}:{theme:DesignTheme;current:DemoP
  const studio=theme.id==='bold-studio';
  const spa=theme.id==='warm-editorial';
  const corporate=theme.id==='modern-corporate';
- const items=demoItems[theme.id]??[];
+ const catalogue=themeCatalogues[theme.id];
+ const items=catalogue?.items??[];
  const pages=demoPages[theme.id];
  const story=demoStories[theme.id];
  const next=pages[pages.findIndex(page=>page.id===current.id)+1];
  const brand=model.style.brand.trim()||theme.brand;
 
  useEffect(()=>{
-  try { sessionStorage.setItem('theme-demo:'+theme.id,JSON.stringify(model)); } catch { /* Preview state remains in memory. */ }
- },[theme.id,model]);
+  try { sessionStorage.setItem(sessionKey(theme),JSON.stringify(model)); } catch { /* Preview state remains in memory. */ }
+ },[theme,model]);
  useEffect(()=>{
   const restore=(event:PageTransitionEvent)=>{if(event.persisted)setModel(load(theme));};
   window.addEventListener('pageshow',restore);
@@ -79,8 +83,8 @@ export function ThemeExperience({theme,current}:{theme:DesignTheme;current:DemoP
   setModel(previous=>({...previous,basket:{...previous.basket,[name]:(previous.basket[name]??0)+1}}));
   setNotice(name+' added to the demo basket.');
  }
- function remove(name:string) {
-  setModel(previous=>({...previous,basket:{...previous.basket,[name]:Math.max(0,(previous.basket[name]??0)-1)}}));
+ function changeQuantity(name:string,step:number) {
+  setModel(previous=>({...previous,basket:{...previous.basket,[name]:Math.max(0,(previous.basket[name]??0)+step)}}));
  }
  function approve(project:string) {
   setModel(previous=>({...previous,approved:[...previous.approved,project]}));
@@ -92,8 +96,9 @@ export function ThemeExperience({theme,current}:{theme:DesignTheme;current:DemoP
  }
 
  const primary=pages[1];
- const product=items.find(item=>item.name===new URLSearchParams(window.location.search).get('item'))??items[0];
- const filtered=category==='All'?items:items.filter(item=>item.category===category);
+ const query=new URLSearchParams(window.location.search);
+ const product=items.find(item=>item.id===query.get('item')||item.name===query.get('item'))??items[0];
+ const hasFinish=product?.id==='studio-wireless';
  const listing=current.id==='catalogue'||current.id==='collection';
  const productPage=current.id==='product'||current.id==='details';
  const isBasket=current.id==='basket';
@@ -105,7 +110,9 @@ export function ThemeExperience({theme,current}:{theme:DesignTheme;current:DemoP
   'product-showcase':'Meet Studio Wireless. Over-ear listening for the commute, the desk and everything in between.',
   'bold-studio':'See what the team is working on, what needs a decision and what is ready to share.',
  }[theme.id]:productPage?product.detail:current.intro;
- const heroImage=home?model.style.image:productPage?model.style.image===theme.image?product.image??'':model.style.image:'';
+ const productImage=catalogue&&product?productPhoto(catalogue,product,finish):'';
+ const heroImage=home?model.style.image:productPage?model.style.image===theme.image?productImage??'':model.style.image:'';
+ const offer=query.get('interest');
  const copy=model.style.copy[current.id];
  const count=Object.values(model.basket).reduce((total,quantity)=>total+quantity,0);
 
@@ -124,14 +131,24 @@ export function ThemeExperience({theme,current}:{theme:DesignTheme;current:DemoP
      </a>)}
     </nav>
    </header>
-   <section className={`experience-hero ${home?'experience-home':'experience-inner'}`}>
+   <section className={`experience-hero ${home?'experience-home':'experience-inner'}${productPage?' experience-product-hero':''}`}>
     <div>
      {home&&<span className="experience-eyebrow">{theme.audience}</span>}
+     {productPage&&<a className="experience-back-link" href={themeDemoUrl(theme.id,cataloguePage(theme))}>Browse the collection</a>}
      <h2>{copy?.heading?.trim()||defaultHeading}</h2>
      <p>{copy?.intro??defaultIntro}</p>
+     {productPage&&<div className="experience-buy">
+      <strong className="experience-hero-price">{currency.format(product.price)}</strong>
+      {hasFinish&&<label className="experience-filter">Finish<select value={finish} onChange={event=>setFinish(event.target.value)}><option>Midnight</option><option>Sandstone</option></select></label>}
+      <button type="button" className="experience-action" onClick={()=>add(hasFinish?product.name+' · '+finish:product.name)}>Add to demo basket</button>
+      <a className="experience-secondary" href={themeDemoUrl(theme.id,'basket')}>View basket</a>
+      {notice&&<p className="experience-purchase-feedback" role="status">{notice}</p>}
+     </div>}
      {home&&<a className="experience-action" href={themeDemoUrl(theme.id,primary.id)}>{studio?'View projects':corporate?'Explore services':primary.label==='Product'?'Explore product':'Browse '+primary.label.toLowerCase()}</a>}
     </div>
-    {heroImage&&<img src={heroImage} width={1000} height={660} alt=""/>}
+    {heroImage&&<img src={heroImage} srcSet={demoPhotoSrcSet(heroImage)}
+     sizes={home&&theme.id==='product-showcase'?'(max-width: 1440px) 95vw, 1350px':'(max-width: 680px) 95vw, (max-width: 1440px) 50vw, 720px'}
+     width={1000} height={660} fetchPriority={home?'high':'auto'} alt=""/>}
    </section>
    {home&&<section className="experience-story">
     <h3>{story.heading}</h3>
@@ -149,13 +166,13 @@ export function ThemeExperience({theme,current}:{theme:DesignTheme;current:DemoP
     </form>
    </section>}
    {(home||current.id==='services')&&corporate&&<section className="experience-section">
-    <h3>How we can help</h3>
-    <div className="experience-grid">{[
-     ['Advisory','Work through a decision with someone who can bring a second perspective.'],
-     ['Operations','Clarify ownership and make everyday processes easier to follow.'],
-     ['Growth planning','Agree what to pursue now and how to measure progress over time.'],
-    ].map(([heading,copy])=><section className="experience-panel" key={heading}><h4>{heading}</h4><p>{copy}</p></section>)}</div>
-    <a className="experience-action" href={themeDemoUrl(theme.id,'contact')}>Discuss a project</a>
+    <div className="merchandise-section-heading"><div><h3>Advisory for the decisions ahead</h3><p>Choose the kind of decision or change you need to work through.</p></div>
+     {home&&<a className="experience-action" href={themeDemoUrl(theme.id,'services')}>Explore all {advisoryOffers.length} services</a>}
+    </div>
+    <div className="experience-grid">{(home?advisoryOffers.filter((_,i)=>i%4===0):advisoryOffers).map(item=>
+     <section className="experience-panel advisory-offer" key={item.name}><span>{item.group}</span><h4>{item.name}</h4><p>{item.detail}</p>
+      <a href={themeDemoUrl(theme.id,'contact')+'?'+new URLSearchParams({interest:item.name})}>Enquire about {item.name}</a>
+     </section>)}</div>
    </section>}
    {corporate&&current.id==='about'&&<section className="experience-section">
     <h3>How we work</h3>
@@ -171,42 +188,28 @@ export function ThemeExperience({theme,current}:{theme:DesignTheme;current:DemoP
     <h3>Project enquiry</h3>
     <form className="example-contact" onSubmit={sampleEnquiry}>
      <label>Example name<input required placeholder="Alex Smith"/></label>
+     <label>Service of interest<select defaultValue={advisoryOffers.find(item=>item.name===offer)?.name??''}>
+      <option value="">Choose a service</option>{advisoryOffers.map(item=><option key={item.name}>{item.name}</option>)}
+     </select></label>
      <label>Example message<textarea required rows={4} placeholder="I’d like to discuss a website project."/></label>
      <button className="experience-action" type="submit">Try example enquiry</button>
     </form>
    </section>}
-   {(home||listing)&&items.length>1&&<section className="experience-section">
-    <h3>{spa?'The home ritual':listing?'Browse the catalogue':'Build your everyday kit'}</h3>
-    {listing&&<label className="experience-filter">Category<select value={category} onChange={event=>setCategory(event.target.value)}>
-     {['All',...new Set(items.map(item=>item.category))].map(option=><option key={option}>{option}</option>)}
-    </select></label>}
-    <div className="experience-grid">{filtered.map(item=><section className="experience-panel experience-product-card" key={item.name}>
-     {item.image&&<img src={item.image} width={420} height={280} loading="lazy" alt=""/>}
-     <div><p className="experience-category">{item.category}</p><h4>{item.name}</h4><p>{item.detail}</p><p>{currency.format(item.price)}</p>
-     <a href={themeDemoUrl(theme.id,'product')+'?'+new URLSearchParams({item:item.name})}>View {item.name}</a></div>
-    </section>)}</div>
-   </section>}
+   {(home||listing)&&catalogue&&<MerchandiseCollection theme={theme} catalogue={catalogue} full={listing}/>}
    {(home||current.id==='specifications')&&theme.id==='product-showcase'&&<section className="experience-section">
     <h3>Product specification</h3>
     <dl className="experience-specs"><div><dt>Fit</dt><dd>Over-ear, closed-back</dd></div><div><dt>Charging</dt><dd>USB-C</dd></div><div><dt>Connectivity</dt><dd>Wireless and wired</dd></div></dl>
     <a className="experience-action" href={themeDemoUrl(theme.id,'details')}>View Studio Wireless</a>
    </section>}
    {productPage&&<section className="experience-section">
-    <h3>{currency.format(product.price)}</h3>
+    <h3>{spa?'The ritual':'How to use it'}</h3>
     <p>{product.use}</p>
-    {theme.id==='product-showcase'&&<label className="experience-filter">Finish<select value={finish} onChange={event=>setFinish(event.target.value)}><option>Midnight</option><option>Sandstone</option></select></label>}
-    <button type="button" className="experience-action" onClick={()=>add(theme.id==='product-showcase'?product.name+' · '+finish:product.name)}>Add to demo basket</button>
-    <a className="experience-secondary" href={themeDemoUrl(theme.id,'basket')}>View basket</a>
    </section>}
-   {isBasket&&<section className="experience-section">
-    {count===0?<p>Your demo basket is empty.</p>:<>
-     <ul className="experience-list">{Object.entries(model.basket).filter(([,quantity])=>quantity>0).map(([name,quantity])=><li key={name}>
-      <strong>{name}</strong><span>Quantity {quantity}</span><button type="button" onClick={()=>remove(name)}>Remove one</button>
-     </li>)}</ul>
-     <p>No real orders are placed in this demo.</p>
-    </>}
-    <a className="experience-action" href={themeDemoUrl(theme.id,primary.id)}>Continue browsing</a>
+   {productPage&&catalogue&&<section className="experience-section merchandise-section">
+    <div className="merchandise-section-heading"><div><h3>{spa?'Complete the ritual':'Complete your setup'}</h3><p>{spa?'Explore a few ways to round out the routine.':'Pair this piece with something that fits the way you use it.'}</p></div></div>
+    <MerchandiseGrid theme={theme} items={relatedItems(catalogue,product)}/>
    </section>}
+   {isBasket&&catalogue&&<DemoBasket theme={theme} catalogue={catalogue} quantities={model.basket} onChange={changeQuantity}/>}
    {studio&&<section className="experience-section">
     {home&&<div className="experience-grid">
      <section className="experience-panel"><h3>Projects</h3><p>{demoProjects.length} sample projects</p></section>
@@ -214,13 +217,16 @@ export function ThemeExperience({theme,current}:{theme:DesignTheme;current:DemoP
      <section className="experience-panel"><h3>Approved</h3><p>{model.approved.length} complete</p></section>
     </div>}
     <h3>{current.id==='approvals'?'Awaiting approval':current.id==='approved'?'Completed projects':'Current projects'}</h3>
-    <ul className="experience-list">{demoProjects.filter(project=>current.id==='approvals'?!model.approved.includes(project):current.id==='approved'?model.approved.includes(project):true).map(project=><li key={project}>
-     <strong>{project}</strong><span>{model.approved.includes(project)?'Approved':'Needs review'}</span>
-     {current.id==='approvals'&&<button type="button" onClick={()=>approve(project)}>Approve {project}</button>}
+    {home&&<p>Follow current work and review the brief before it goes to a client.</p>}
+    <ul className="experience-list experience-projects">{(home?demoProjects.slice(0,4):demoProjects.filter(project=>current.id==='approvals'?!model.approved.includes(project.name):current.id==='approved'?model.approved.includes(project.name):true)).map(project=><li key={project.name}>
+     <div><span className="merchandise-category">{project.type}</span><strong>{project.name}</strong><p>{project.detail}</p></div>
+     <span className={model.approved.includes(project.name)?'project-approved':'project-review'}>{model.approved.includes(project.name)?'Approved':'Needs review'}</span>
+     {current.id==='approvals'&&<button type="button" onClick={()=>approve(project.name)}>Approve {project.name}</button>}
     </li>)}</ul>
+    {home&&<a className="experience-action" href={themeDemoUrl(theme.id,'projects')}>Open all {demoProjects.length} projects</a>}
     {current.id==='approvals'&&model.approved.length===demoProjects.length&&<p>All sample projects have been reviewed.</p>}
    </section>}
-   {notice&&<p className="experience-feedback" role="status">{notice}</p>}
+   {notice&&!productPage&&<p className="experience-feedback" role="status">{notice}</p>}
    <footer className="experience-footer"><strong>{brand}</strong><span>Interactive theme demo</span>
     {next&&<a href={themeDemoUrl(theme.id,next.id)}>Next page · {next.label}</a>}
    </footer>
