@@ -45,6 +45,7 @@ async function rpc(serviceUrl: string, key: string, name: string, body: unknown)
     method: "POST",
     headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(7000),
   });
   const text = await response.text();
   let data: unknown;
@@ -132,6 +133,7 @@ Deno.serve(async (request: Request) => {
         "Content-Type": "application/json",
         "Idempotency-Key": `enquiry-notification/${id}`,
       },
+      signal: AbortSignal.timeout(9000),
       body: JSON.stringify({
         from: "Tech & GUARD Enquiries <enquiries@auth.techandguard.co.za>",
         to: [inbox],
