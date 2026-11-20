@@ -61,7 +61,7 @@ function Contact(){
   <aside><h2>Talk to Tech &amp; GUARD</h2><p>Share what you’re trying to achieve, any deadline, and what you already have. We’ll review your brief and reply with the next step.</p>
    <a className="contact-email" href={`mailto:${companyEmail}`}>{companyEmail}</a>
    <a className="contact-email" href={companyTelephoneLink}>{companyPhone}</a>
-   <div className="actions"><a className="button primary" href={whatsappLink(defaultEnquiryMessage)} target="_blank" rel="noopener noreferrer">Start a WhatsApp enquiry <ArrowUpRight size={16}/></a><a className="button secondary" href={companyWhatsAppShortLink} target="_blank" rel="noopener noreferrer">Open our WhatsApp chat</a></div>
+   <div className="actions"><a className="button primary" href={whatsappLink('Hello Tech & Guard, I’d like help with a digital project.\n\n'+defaultEnquiryMessage)} target="_blank" rel="noopener noreferrer">Start a WhatsApp enquiry <ArrowUpRight size={16}/></a><a className="button secondary" href={companyWhatsAppShortLink} target="_blank" rel="noopener noreferrer">Open our WhatsApp chat</a></div>
    <p>Stellenbosch, South Africa</p><a className="text-link" href="/store/">Looking for a product? Visit the Store</a>
   </aside>
   <EnquiryForm kind="service" topics={services.map(service=>service.title)} initialTopic={initialTopic} initialTheme={params.get('theme')||''}/>

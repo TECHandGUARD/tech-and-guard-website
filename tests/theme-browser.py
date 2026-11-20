@@ -221,6 +221,7 @@ def verify_gallery(browser, base_url, width, enquiry_origin=FIXTURE):
             assert name in unquote(email), name
             whats_app = page.get_by_role("link", name="Continue on WhatsApp", exact=True).get_attribute("href")
             assert whats_app.startswith("https://wa.me/27731127124?text="), name
+            assert unquote(whats_app).count("Hello Tech & Guard") == 1, name
             page.get_by_label("Your name").fill("Test User")
             page.get_by_label("Your email").fill("test@example.invalid")
             if is_store:

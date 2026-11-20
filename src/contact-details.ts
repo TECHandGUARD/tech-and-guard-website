@@ -5,9 +5,7 @@ export const companyWhatsAppShortLink = 'https://wa.me/message/B3ZY56KS6PR3F1';
 export const companyWhatsAppNumber = '27731127124';
 
 export const defaultEnquiryMessage = [
-  'Hello Tech & Guard, I’d like help with a digital project.',
-  '',
-  'My business or project:',
+  'Business or project:',
   'What I want to achieve:',
   'Who will use it:',
   'What I already have (website, brand or content):',
@@ -16,8 +14,6 @@ export const defaultEnquiryMessage = [
 ].join('\n');
 
 export const defaultProductEnquiryMessage = [
-  'Hello Tech & Guard, I’d like to enquire about a product.',
-  '',
   'Product name or SKU:',
   'Model, colour or other options:',
   'My town or suburb:',
