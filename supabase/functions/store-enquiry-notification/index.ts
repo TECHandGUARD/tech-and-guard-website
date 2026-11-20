@@ -1,7 +1,40 @@
-import { allowedOrigin, corsHeaders, hashClientAddress, jsonResponse } from "../_shared/shop.ts";
-
 const validId = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const inbox = "info@techandguard.co.za";
+const siteOrigin = "https://www.techandguard.co.za";
+
+function allowedOrigin(request: Request) {
+  const origin = request.headers.get("origin");
+  const configured = Deno.env.get("SHOP_ALLOWED_ORIGINS")?.split(",").map((value) => value.trim()).filter(Boolean) ?? [];
+  return !!origin && new Set([siteOrigin, ...configured]).has(origin);
+}
+
+function corsHeaders(origin: string) {
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Max-Age": "600",
+    "Vary": "Origin",
+  };
+}
+
+function jsonResponse(value: unknown, status = 200, origin = siteOrigin) {
+  return new Response(JSON.stringify(value), {
+    status,
+    headers: { ...corsHeaders(origin), "Content-Type": "application/json", "Cache-Control": "no-store" },
+  });
+}
+
+async function hashClientAddress(request: Request, secret: string) {
+  const address = request.headers.get("cf-connecting-ip")
+    ?? request.headers.get("x-real-ip")
+    ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    ?? "unknown";
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(address));
+  return Array.from(new Uint8Array(signature), (value) => value.toString(16).padStart(2, "0")).join("");
+}
 
 function failure(origin: string, status: number, code: string) {
   return jsonResponse({ sent: false, configured: status !== 503, code }, status, origin);
