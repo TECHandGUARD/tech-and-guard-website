@@ -41,7 +41,7 @@ Deno.serve(async (request: Request) => {
   const name = cleanText(body.name, 120);
   const email = cleanText(body.email, 254).toLowerCase();
   const phone = cleanText(body.phone, 32);
-  if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !/^\+?[0-9 ()-]{7,32}$/.test(phone)) {
+  if (!name || email.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !/^\+?[0-9 ()-]{7,32}$/.test(phone)) {
     return jsonResponse({ error: "invalid_customer" }, 400, origin);
   }
   if (!Array.isArray(body.items) || body.items.length < 1 || body.items.length > 25) return jsonResponse({ error: "invalid_checkout" }, 400, origin);
@@ -108,7 +108,7 @@ Deno.serve(async (request: Request) => {
       return_url: `${site}/store/?payment=return&order=${saved.id}`,
       cancel_url: `${site}/store/?payment=cancelled&order=${saved.id}`,
       notify_url: `${config.serviceUrl}/functions/v1/payfast-itn`,
-      name_first: firstName,
+      name_first: firstName.slice(0, 100),
       name_last: lastName,
       email_address: email,
       cell_number: phone.replace(/[^+0-9]/g, ""),
