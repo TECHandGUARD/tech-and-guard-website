@@ -8,9 +8,10 @@ import {catalogueImage, catalogueText} from './catalogue-display';
 import {money} from './commerce';
 import {storeRequest} from './store-api';
 import type {ProductDraft} from './store-import';
+import {companyEmail,defaultProductEnquiryMessage,whatsappLink} from './contact-details';
 
 const categoryIcons = {work:BriefcaseBusiness,power:BatteryCharging,audio:Headphones,everyday:Smartphone};
-const enquiryEmail = 'aneleq@techandguard.co.za';
+const enquiryEmail = companyEmail;
 const basketKey = 'tech-guard:enquiry-basket';
 type Product = ProductDraft & {published: boolean};
 const cataloguePath = '/rest/v1/corporate_products?select=sku,handle,title,description,price_cents,stock,image_url,options,published&published=eq.true&order=title';
@@ -88,6 +89,7 @@ export function Store() {
  ].join('\n');
  const canEnquire = state === 'ready' && lines.length > 0 && missing.length === 0 && !invalid;
  const enquiryLink = `mailto:${enquiryEmail}?subject=Product%20enquiry&body=${encodeURIComponent(body)}`;
+ const whatsAppEnquiryLink = whatsappLink(body);
 
  async function copyEnquiry() {
   try {
@@ -183,7 +185,7 @@ export function Store() {
   <aside className="store-panel enquiry-basket" aria-labelledby="enquiry-basket">
    <h3 id="enquiry-basket" ref={basketHeading} tabIndex={-1}>Your enquiry basket</h3>
    {!count && <p>Add products from the catalogue to start an enquiry.</p>}
-   <a className="showroom-contact" href={`mailto:${enquiryEmail}`}>Ask about a product <ArrowUpRight size={15} aria-hidden="true"/></a>
+   <a className="showroom-contact" href={whatsappLink(defaultProductEnquiryMessage)} target="_blank" rel="noopener noreferrer">Ask about a product on WhatsApp <ArrowUpRight size={15} aria-hidden="true"/></a>
    {!!(lines.length || missing.length) && <ul className="enquiry-items">
     {lines.map(p => <li key={p.sku}><div><strong>{p.title}</strong><small>{money(p.price_cents)} each</small>
      {quantityFor(p.sku) > basketQuantityLimit(p.stock) && <small role="alert">Reduce the quantity to the available limit of {basketQuantityLimit(p.stock)}.</small>}</div>
@@ -201,10 +203,11 @@ export function Store() {
      <div className="actions">
       <button type="button" className="button primary" aria-expanded={directEnquiry} onClick={()=>setDirectEnquiry(open=>!open)}>{directEnquiry?'Hide enquiry form':'Enquire online'}</button>
       <a className="button secondary" href={enquiryLink}>Email enquiry</a>
+      <a className="button secondary" href={whatsAppEnquiryLink} target="_blank" rel="noopener noreferrer">WhatsApp enquiry</a>
       <button type="button" className="button secondary" onClick={() => void copyEnquiry()}>Copy enquiry</button>
      </div>
      {directEnquiry&&<EnquiryForm kind="product" items={lines.map(product=>({sku:product.sku,quantity:quantityFor(product.sku)}))}/>}
-     <p>Email enquiry opens a draft in your email app. Add your town or suburb, then send it to <a href={`mailto:${enquiryEmail}`}>{enquiryEmail}</a>.</p>
+    <p>Your email or WhatsApp draft includes the product list. Add your town or suburb and ask us to confirm availability and delivery.</p>
     </> : <p>Update the unavailable items or quantities to continue.</p>}</>}
    <p className="enquiry-feedback" role="status">{basketMessage}</p>
   </aside>

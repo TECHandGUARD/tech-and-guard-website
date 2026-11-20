@@ -1,6 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {storeRequest} from './store-api';
 import {onlineStoreService,resolveTheme,themeChoices} from './store-themes';
+import {companyEmail,defaultEnquiryMessage,defaultProductEnquiryMessage,whatsappLink} from './contact-details';
 
 type Line={sku:string;quantity:number};
 type Props={
@@ -10,14 +11,12 @@ type Props={
  initialTopic?:string;
  initialTheme?:string;
 };
-const replyAddress='aneleq@techandguard.co.za';
-
 export function EnquiryForm({kind,items=[],topics=[],initialTopic='',initialTheme=''}:Props){
  const [ready,setReady]=useState<boolean|null>(null);
  const [name,setName]=useState('');
  const [email,setEmail]=useState('');
  const [topic,setTopic]=useState(topics.includes(initialTopic)?initialTopic:'');
- const [message,setMessage]=useState('');
+ const [message,setMessage]=useState(kind==='service'?defaultEnquiryMessage:defaultProductEnquiryMessage);
  const [theme,setTheme]=useState(resolveTheme(initialTopic,initialTheme));
  const [business,setBusiness]=useState('');
  const [catalogueSize,setCatalogueSize]=useState('');
@@ -48,8 +47,17 @@ export function EnquiryForm({kind,items=[],topics=[],initialTopic='',initialThem
  },[]);
  const mailBody=[name&&'Name: '+name,email&&'Email: '+email,topic&&'Service: '+topic,projectMessage,
   ...items.map(item=>item.quantity+' × '+item.sku)].filter(Boolean).join('\n');
- const emailLink='mailto:'+replyAddress+'?subject='+encodeURIComponent(kind==='service'?'Project enquiry':'Product enquiry')+
+ const emailLink='mailto:'+companyEmail+'?subject='+encodeURIComponent(kind==='service'?'Project enquiry':'Product enquiry')+
   '&body='+encodeURIComponent(mailBody);
+ const whatsAppMessage=[
+  kind==='service'?'Hello Tech & Guard, I’d like to discuss a project.':'Hello Tech & Guard, I’d like to enquire about these products.',
+  name&&'Name: '+name,
+  email&&'Email: '+email,
+  topic&&'Service: '+topic,
+  projectMessage,
+  ...items.map(item=>item.quantity+' × '+item.sku),
+ ].filter(Boolean).join('\n');
+ const whatsAppEnquiryLink=whatsappLink(whatsAppMessage);
 
  async function send(event:React.FormEvent){
   event.preventDefault();
@@ -106,13 +114,14 @@ export function EnquiryForm({kind,items=[],topics=[],initialTopic='',initialThem
   <label>{kind==='service'?'Project details':'Town or suburb and any questions'}
    <textarea required rows={4} maxLength={isStoreBrief?1500:themeName?2000-('Design theme: '+themeName+'\n').length:2000} value={message} onChange={event=>setMessage(event.target.value)}/>
   </label>
-  <p>We use these details to reply about your enquiry. Please leave out payment and identity details.</p>
+  <p>Your enquiry starts with prompts to make the brief easier. Edit them before sending. We use these details to reply; please leave out payment and identity details.</p>
   {feedback&&<p role="alert">{feedback}</p>}
   {ready===null&&<p role="status">Checking enquiry availability…</p>}
-  {ready===false&&<p>Online enquiries are unavailable here. Open an email draft or use the contact address.</p>}
+  {ready===false&&<p>Online enquiries are unavailable here. Open an email draft or continue on WhatsApp.</p>}
   <div className="actions">
    {ready&&<button className="button primary" disabled={busy}>{busy?'Sending…':'Send enquiry'}</button>}
-   <a className={ready?'button secondary':'button primary'} href={emailLink}>Open email draft</a>
+   <a className="button secondary" href={emailLink}>Email {companyEmail}</a>
+   <a className={ready?'button secondary':'button primary'} href={whatsAppEnquiryLink} target="_blank" rel="noopener noreferrer">Continue on WhatsApp</a>
   </div>
  </form>;
 }

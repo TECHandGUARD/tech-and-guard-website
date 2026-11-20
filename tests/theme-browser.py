@@ -216,8 +216,11 @@ def verify_gallery(browser, base_url, width, enquiry_origin=FIXTURE):
             is_store = service == "Independent online stores"
             label = "Store theme" if is_store else "Design theme"
             expect(page.get_by_role("combobox", name=label, exact=True)).to_have_value(theme_id)
-            email = page.get_by_role("link", name="Open email draft").get_attribute("href")
+            email = page.get_by_role("link", name="Email info@techandguard.co.za", exact=True).get_attribute("href")
+            assert email.startswith("mailto:info@techandguard.co.za?"), name
             assert name in unquote(email), name
+            whats_app = page.get_by_role("link", name="Continue on WhatsApp", exact=True).get_attribute("href")
+            assert whats_app.startswith("https://wa.me/27731127124?text="), name
             page.get_by_label("Your name").fill("Test User")
             page.get_by_label("Your email").fill("test@example.invalid")
             if is_store:
