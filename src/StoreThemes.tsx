@@ -1,5 +1,5 @@
 import {designThemes, themeBriefLink, themeServices} from './store-themes';
-import {demoPages, themeDemoUrl} from './theme-demo-content';
+import {demoPages, demoPhotoSrcSet, themeDemoUrl} from './theme-demo-content';
 import './store-themes.css';
 
 export function StoreThemes({service}:{service?:string}) {
@@ -14,7 +14,7 @@ export function StoreThemes({service}:{service?:string}) {
      const demoUrl=themeDemoUrl(theme.id);
      return <article className="store-theme-card" key={theme.id}>
       <a className={`theme-cover demo-${theme.id}`} href={demoUrl} aria-label={'Preview '+theme.name}>
-       {theme.image&&<img src={theme.image} alt="" width={640} height={430} loading="lazy"/>}
+       {theme.image&&<img src={theme.image} srcSet={demoPhotoSrcSet(theme.image)} sizes="(max-width: 640px) 92vw, (max-width: 1000px) 50vw, 440px" alt="" width={640} height={430} loading="lazy"/>}
        <span>{theme.brand}</span><p>{theme.headline}</p>
       </a>
       <div className="store-theme-copy">

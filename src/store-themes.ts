@@ -12,7 +12,7 @@ export const designThemes = [
  {
   id:'modern-corporate', service:businessWebsiteService, name:'Modern Corporate',
   description:'A confident company website for professional firms that need to explain their services and turn interest into enquiries.',
-  brand:'Meridian Advisory', headline:'Clarity for your next decision.', image:'/images/themes/corporate.webp',
+  brand:'Meridian Advisory', headline:'Clarity for your next decision.', image:'/images/themes/advisory-team.webp',
   audience:'Strategy and operations advisory',
  },
  {
@@ -24,7 +24,7 @@ export const designThemes = [
  {
   id:'clean-premium-retail', service:onlineStoreService, name:'Clean Premium Retail',
   description:'A bright catalogue that keeps categories and product information easy to scan.',
-  brand:'Common Ground', headline:'Essentials for a better setup.', image:'/images/store-editorial.webp',
+  brand:'Common Ground', headline:'Essentials for a better setup.', image:'/images/themes/retail-workspace.webp',
   audience:'Everyday tech and accessories',
  },
  {
@@ -36,7 +36,7 @@ export const designThemes = [
  {
   id:'bold-studio', service:customApplicationService, name:'Bold Studio',
   description:'A creative project workspace with high-contrast status labels and approvals close at hand.',
-  brand:'Studio North', headline:'Project workspace', image:'',
+  brand:'Studio North', headline:'Make good work move.', image:'/images/themes/studio-review.webp',
   audience:'Creative project workspace',
  },
 ] as const;
