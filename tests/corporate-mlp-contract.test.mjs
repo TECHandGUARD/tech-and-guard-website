@@ -27,8 +27,14 @@ test('home page renders the complete service catalogue', () => {
 test('contact supports direct enquiry and keeps an email fallback', () => {
   assert.match(source, /<EnquiryForm kind="service"/);
   const form = readFileSync(new URL('../src/EnquiryForm.tsx', import.meta.url), 'utf8');
-  assert.match(form, /Open email draft/);
-  assert.match(source, /mailto:aneleq@techandguard\.co\.za/);
+  assert.match(form, /Email \{companyEmail\}/);
+  assert.match(form, /Continue on WhatsApp/);
+  assert.match(source, /companyWhatsAppShortLink/);
+  const details = readFileSync(new URL('../src/contact-details.ts', import.meta.url), 'utf8');
+  assert.match(details, /info@techandguard\.co\.za/);
+  assert.match(details, /073 112 7124/);
+  assert.match(details, /https:\/\/wa\.me\/message\/B3ZY56KS6PR3F1/);
+  assert.match(details, /I want to achieve/);
 });
 
 test('premium theme has approved brand tokens and keyboard focus', () => {
@@ -46,7 +52,8 @@ test('project case study does not present pilot as a completed rollout', () => {
 test('the public store offers an email enquiry without a customer sign-in or checkout', () => {
   const store = readFileSync(new URL('../src/Store.tsx', import.meta.url), 'utf8');
   assert.match(store, /mailto:/);
-  assert.match(store, /Email enquiry opens a draft/);
+  assert.match(store, /Email enquiry/);
+  assert.match(store, /WhatsApp enquiry/);
   assert.doesNotMatch(store, /StoreCheckout|corporate_create_order_request|href="\/account\//);
   assert.doesNotMatch(source, /className="account-nav-link"/);
 });

@@ -4,6 +4,7 @@ import {authErrorMessage} from './auth-errors';
 import {cleanAuthLink,inspectAuthLink} from './auth-links';
 import {createClient} from '@supabase/supabase-js';
 import {STORE_URL,PUBLIC_KEY,setStoreToken,storeRequest} from './store-api';
+import {companyEmail} from './contact-details';
 const incomingLink=inspectAuthLink(window.location.href);
 export const corporateAuth=createClient(STORE_URL,PUBLIC_KEY,{global:{fetch:authFetch},auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:true}});
 corporateAuth.auth.onAuthStateChange((_event,session)=>{setStoreToken(session?.access_token||'');});
@@ -48,7 +49,7 @@ export function AccountControls({signedIn=false,returnPath='/admin/'}:{signedIn?
     setCooldown(60);setMessage('If this account is awaiting confirmation, check your inbox and spam folder for a fresh link. Use only the newest link.');
    }else{
     const {error}=await corporateAuth.auth.resetPasswordForEmail(email.trim(),{redirectTo:window.location.origin+returnPath});if(error)throw new Error(authErrorMessage(error,'reset'));
-    setCooldown(60);setMessage('If an account exists, check your inbox and spam folder for the recovery link. Use only the newest link. If it does not arrive, contact aneleq@techandguard.co.za.');
+    setCooldown(60);setMessage('If an account exists, check your inbox and spam folder for the recovery link. Use only the newest link. If it does not arrive, contact '+companyEmail+'.');
    }
   }catch(e){setMessage(e instanceof Error?e.message:'Account action failed.');}finally{setBusy(false);}
  };
