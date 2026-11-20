@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {ArrowDownRight, ArrowUpRight, BatteryCharging, BriefcaseBusiness, Headphones, Minus, Package, Plus, ShoppingBag, Smartphone} from 'lucide-react';
 import './showroom.css';
 import {EnquiryForm} from './EnquiryForm';
@@ -9,6 +9,8 @@ import {money} from './commerce';
 import {storeRequest} from './store-api';
 import type {ProductDraft} from './store-import';
 import {companyEmail,defaultProductEnquiryMessage,whatsappLink} from './contact-details';
+import {PayFastCheckout} from './PayFastCheckout';
+import {ShopOrderStatus} from './ShopOrderStatus';
 
 const categoryIcons = {work:BriefcaseBusiness,power:BatteryCharging,audio:Headphones,everyday:Smartphone};
 const enquiryEmail = companyEmail;
@@ -43,6 +45,7 @@ export function Store() {
  const [directEnquiry, setDirectEnquiry] = useState(false);
  const basketHeading = useRef<HTMLHeadingElement>(null);
  const catalogueHeading = useRef<HTMLHeadingElement>(null);
+ const clearBasketAfterPayment=useCallback(()=>setBasket({}),[]);
 
  useEffect(() => {
   const controller = new AbortController();
@@ -117,15 +120,16 @@ export function Store() {
  }
 
  return <div className="store-showroom">
+  <ShopOrderStatus onPaid={clearBasketAfterPayment}/>
   <header className="showroom-hero">
    <div className="container showroom-hero-inner">
     <div>
      <p className="showroom-brand">TECH &amp; GUARD STORE</p>
      <h1>Better gear for<br/>every day.</h1>
-     <p className="showroom-lead">Shop laptop bags, charging gear and audio. Find what suits you and enquire about availability and delivery.</p>
+      <p className="showroom-lead">Shop laptop bags, charging gear and audio. Add your favourites to the basket, then choose secure PayFast checkout or ask us a question.</p>
      <div className="actions">
       <a className="button primary" href="#catalogue">Browse products <ArrowDownRight size={18} aria-hidden="true"/></a>
-      <button type="button" className="button secondary" onClick={() => basketHeading.current?.focus()}><ShoppingBag size={17} aria-hidden="true"/> Enquiry basket ({count})</button>
+      <button type="button" className="button secondary" onClick={() => basketHeading.current?.focus()}><ShoppingBag size={17} aria-hidden="true"/> Basket ({count})</button>
      </div>
     </div>
     <img className="showroom-editorial" src="/images/store-editorial.webp" alt="" width={1200} height={800} fetchPriority="high"/>
@@ -176,14 +180,14 @@ export function Store() {
      <ProductImage key={p.image_url} product={p}/>
      <h3>{p.title}</h3>{p.options && <p className="showroom-variant">{p.options}</p>}<p>{p.description}</p>
      <div className="product-card-actions"><strong className="premium-product-price">{money(p.price_cents)}</strong>
-      <p className="premium-stock-status">{p.stock === 0 ? 'Out of stock' : 'Confirm availability with us'}</p>
-      <button className="button ghost" disabled={atLimit} aria-label={`Add to enquiry: ${p.title}`} onClick={() => updateQuantity(p, 1)}>Add to enquiry</button>{quantity>0&&<small>{quantity} in enquiry basket</small>}
+      <p className="premium-stock-status">{p.stock === 0 ? 'Out of stock' : p.stock === null ? 'Stock confirmed before purchase' : `${p.stock} available`}</p>
+      <button className="button ghost" disabled={atLimit||p.stock===0} aria-label={`Add to basket: ${p.title}`} onClick={() => updateQuantity(p, 1)}>Add to basket</button>{quantity>0&&<small>{quantity} in basket</small>}
      </div>
     </article>;
    })}</div>}
    </section>
   <aside className="store-panel enquiry-basket" aria-labelledby="enquiry-basket">
-   <h3 id="enquiry-basket" ref={basketHeading} tabIndex={-1}>Your enquiry basket</h3>
+   <h3 id="enquiry-basket" ref={basketHeading} tabIndex={-1}>Your basket</h3>
    {!count && <p>Add products from the catalogue to start an enquiry.</p>}
    <a className="showroom-contact" href={whatsappLink(defaultProductEnquiryMessage)} target="_blank" rel="noopener noreferrer">Ask about a product on WhatsApp <ArrowUpRight size={15} aria-hidden="true"/></a>
    {!!(lines.length || missing.length) && <ul className="enquiry-items">
@@ -201,15 +205,16 @@ export function Store() {
    {!!lines.length && <><p>Listed subtotal <strong>{money(total)}</strong>. Delivery is confirmed separately.</p>
     {canEnquire ? <>
      <div className="actions">
-      <button type="button" className="button primary" aria-expanded={directEnquiry} onClick={()=>setDirectEnquiry(open=>!open)}>{directEnquiry?'Hide enquiry form':'Enquire online'}</button>
+      <button type="button" className="button primary" aria-expanded={directEnquiry} onClick={()=>setDirectEnquiry(open=>!open)}>{directEnquiry?'Hide enquiry form':'Ask about these products'}</button>
       <a className="button secondary" href={enquiryLink}>Email enquiry</a>
       <a className="button secondary" href={whatsAppEnquiryLink} target="_blank" rel="noopener noreferrer">WhatsApp enquiry</a>
       <button type="button" className="button secondary" onClick={() => void copyEnquiry()}>Copy enquiry</button>
      </div>
      {directEnquiry&&<EnquiryForm kind="product" items={lines.map(product=>({sku:product.sku,quantity:quantityFor(product.sku)}))}/>}
-    <p>Your email or WhatsApp draft includes the product list. Add your town or suburb and ask us to confirm availability and delivery.</p>
+    <p>Your email or WhatsApp draft includes the product list. Add your town or suburb and we’ll help with product questions.</p>
     </> : <p>Update the unavailable items or quantities to continue.</p>}</>}
    <p className="enquiry-feedback" role="status">{basketMessage}</p>
+   {!!lines.length&&missing.length===0&&<PayFastCheckout items={lines.map(product=>({sku:product.sku,title:product.title,options:product.options,quantity:quantityFor(product.sku),price_cents:product.price_cents,stock:product.stock}))}/>}
   </aside>
  </div></div>;
 }

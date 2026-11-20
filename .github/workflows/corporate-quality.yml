@@ -6,6 +6,8 @@ on:
       - 'src/**'
       - 'tests/**'
       - 'scripts/**'
+      - 'supabase/functions/**'
+      - 'supabase/migrations/**'
       - 'public/**'
       - 'package.json'
       - 'package-lock.json'

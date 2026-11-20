@@ -284,10 +284,11 @@ def verify_live_store(browser, width):
             image.scroll_into_view_if_needed()
             image.evaluate("(img) => img.decode()")
             assert image.evaluate("(img) => img.naturalWidth") >= 100, width
-        add_button = cards.first.get_by_role("button", name="Add to enquiry")
+        add_button = cards.first.get_by_role("button", name=re.compile("Add to basket"))
         assert add_button.evaluate("(el) => el.getBoundingClientRect().height") >= 44, width
         add_button.click()
-        expect(cards.first.get_by_text("1 in enquiry basket")).to_be_visible()
+        expect(cards.first.get_by_text("1 in basket")).to_be_visible()
+        expect(page.get_by_role("heading", name="Checkout setup is in progress")).to_be_visible()
         assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), f"basket overflows at {width}px"
         print(f"{width}px: live store has 16 products, loaded product images, working basket and no horizontal overflow.")
     except Exception:
