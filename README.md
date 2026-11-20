@@ -14,7 +14,7 @@ Run `npm run build` to check types and create a static production build in `dist
 ## Before publishing
 
 - Confirm the descriptions and status of SmartBridge FET and the store with the company.
-- Add an approved contact address and connect a real enquiry endpoint before promising form submissions. The contact form opens the visitor’s email app with their project brief; it does not send or store enquiries automatically.
+- Keep contact details current. The direct enquiry form stores submissions for administrator review; it does not send an automatic email notification. Email links open the visitor’s configured mail app with a prewritten draft.
 - Confirm trademark, company and project details; replace abstract CSS project art with approved screenshots when available.
 - Configure your domain, HTTPS and security headers at the hosting provider.
 
@@ -26,7 +26,7 @@ The catalogue and private uploads use the existing TECHandGUARD Supabase project
 
 - CSV supports Shopify variants and a simple Title/SKU/Price/Stock/Image URL format. Up to 5 MB and 2,000 variants. A validation preview blocks invalid imports. Saving is atomic, keyed by SKU, preserves unlisted products, and returns imported variants to draft.
 - Administrators review each draft and publish or unpublish it. Visitors only see published products.
-- Product enquiries use a cart and open the visitor's email app. Verified customers can also save unpaid requests with server-priced snapshots. No payment, inventory reservation, automatic email, tax or delivery quote is claimed.
+- Product enquiries use a basket with prewritten email and WhatsApp drafts, and can be submitted to the administrator enquiry queue. The PayFast hosted-checkout flow, verified notifications, stock reservations and order queue are implemented, but checkout remains off until the owner configures merchant secrets and approves store policies and fulfilment details. Card details stay on PayFast. No automatic email notification, tax calculation or delivery quote is claimed while those controls are not configured.
 - Shopify ZIPs up to 20 MB are checked for archive structure, unsafe paths and expansion limits, then stored in a private bucket. This is a reference upload, not an automatic theme installer.
 - Admin sign-in uses existing Supabase Auth accounts. No account is automatically promoted. Owner grants are recorded in private `corporate_private.staff_grants`; the account email must be verified before access is usable. Owner administrators can assign and revoke verified staff from the admin page. Never use user-editable metadata to grant admin access.
 - Access tokens stay in memory, not local storage. Reload requires sign-in again; the Auth client refreshes an active memory session. Account registration/recovery requires configured Auth email delivery and redirect URLs.
