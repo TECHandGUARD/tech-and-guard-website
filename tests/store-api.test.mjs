@@ -39,3 +39,19 @@ test('a conflicting existing request keeps its original key for investigation',a
  globalThis.fetch=async()=>new Response('{"message":"request_changed"}',{status:400});
  await assert.rejects(()=>storeRequest('/rest/v1/rpc/corporate_create_order_request'),e=>!(e instanceof StoreRejection));
 });
+
+test('a late expiry response preserves a refreshed staff session',async()=>{
+ setStoreToken('old-session');
+ let finish;
+ globalThis.fetch=()=>new Promise(resolve=>{finish=resolve;});
+ const pending=storeRequest('/rest/v1/test');
+ setStoreToken('new-session');
+ finish(new Response('{}',{status:401}));
+ await assert.rejects(pending,/session has expired/);
+ globalThis.fetch=async(_url,options)=>{
+  assert.equal(options.headers.get('Authorization'),'Bearer new-session');
+  return new Response('[]');
+ };
+ try {await storeRequest('/rest/v1/test');}
+ finally {setStoreToken('');}
+});

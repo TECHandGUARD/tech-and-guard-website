@@ -10,14 +10,15 @@ import {Inventory} from './Inventory';
 import {InventoryWorkspace,AuditEvents} from './InventoryWorkspace';
 import {AdminShell} from './AdminShell';
 import {AdminOverview,OperationsInsights,CustomerRequests,FeatureReadiness,RolePermissions} from './AdminOverview';
-import {AdminSection,parseAdminSection} from './admin-navigation';
+import {AdminRoute,AdminSection,AdminTask,adminHash,parseAdminRoute} from './admin-navigation';
 import {PUBLIC_STORE_URL} from './admin-links';
 import {Orders} from './Orders';
 import {EnquiryQueue} from './EnquiryQueue';
 import {ShopOrders} from './ShopOrders';
 export function StoreAdmin(){
  const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[admin,setAdmin]=useState(false),[owner,setOwner]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
- const [rows,setRows]=useState<Product[]>([]),[orders,setOrders]=useState<OrderRequest[]>([]),[tab,setTab]=useState<AdminSection>('dashboard');
+ const [rows,setRows]=useState<Product[]>([]),[orders,setOrders]=useState<OrderRequest[]>([]),[route,setRoute]=useState<AdminRoute>({section:'dashboard'});
+ const {section:tab,task}=route;
  const [shopOrders,setShopOrders]=useState<ShopOrder[]>([]);
  const [sessionUser,setSessionUser]=useState(''),[accessRevision,setAccessRevision]=useState(0),[checking,setChecking]=useState(false),[dataLoading,setDataLoading]=useState(false),[dataError,setDataError]=useState(''),[hasData,setHasData]=useState(false),[navLocked,setNavLocked]=useState(false);
  const submitGuard=useRef(false),heading=useRef<HTMLHeadingElement>(null),loadVersion=useRef(0);
@@ -25,17 +26,42 @@ export function StoreAdmin(){
  useEffect(()=>{let alive=true;void corporateAuth.auth.getSession().then(({data,error})=>{if(!alive)return;if(error)setMessage(authErrorMessage(error,'login'));setStoreToken(data.session?.access_token||'');setSessionUser(data.session?.user.id||'');}).catch(()=>{if(alive)setMessage('Your session could not be checked. Try signing in below.');});const {data}=corporateAuth.auth.onAuthStateChange((_event,session)=>{if(alive){setStoreToken(session?.access_token||'');setSessionUser(session?.user.id||'');}});return()=>{alive=false;data.subscription.unsubscribe();loadVersion.current++;};},[]);
  useEffect(()=>{let alive=true;loadVersion.current++;setAdmin(false);setOwner(false);setRows([]);setOrders([]);setShopOrders([]);setDataError('');setDataLoading(false);setHasData(false);setChecking(Boolean(sessionUser));if(!sessionUser)return;
  setMessage('Signed in. Checking store administrator access…');
- void checkAdminAccess(storeRequest).then(access=>{if(!alive)return;setOwner(access.owner);setAdmin(true);setTab(parseAdminSection(window.location.hash,access.owner));setMessage('');setChecking(false);void load().catch(()=>{});}).catch(error=>{if(alive)setMessage(error instanceof Error?error.message:'Administrator access could not be checked. Retry below.');}).finally(()=>{if(alive)setChecking(false);});return()=>{alive=false;loadVersion.current++;};},[sessionUser,accessRevision]);
+ void checkAdminAccess(storeRequest).then(access=>{if(!alive)return;setOwner(access.owner);setAdmin(true);setRoute(parseAdminRoute(window.location.hash,access.owner));setMessage('');setChecking(false);void load().catch(()=>{});}).catch(error=>{if(alive)setMessage(error instanceof Error?error.message:'Administrator access could not be checked. Retry below.');}).finally(()=>{if(alive)setChecking(false);});return()=>{alive=false;loadVersion.current++;};},[sessionUser,accessRevision]);
  useEffect(()=>{if(admin)heading.current?.focus();},[admin]);
- const navigate=(section:AdminSection)=>{if(navLocked)return;setTab(section);setMessage('');window.history.pushState(null,'',window.location.pathname+window.location.search+'#'+section);};
- useEffect(()=>{if(!admin)return;const sync=()=>{if(navLocked){window.history.replaceState(null,'',window.location.pathname+window.location.search+'#'+tab);return;}setTab(parseAdminSection(window.location.hash,owner));};window.addEventListener('popstate',sync);window.addEventListener('hashchange',sync);return()=>{window.removeEventListener('popstate',sync);window.removeEventListener('hashchange',sync);};},[admin,owner,navLocked,tab]);
+ const navigate=(section:AdminSection,task?:AdminTask)=>{
+  if(navLocked)return;
+  const next={section,task};
+  const hash=adminHash(next);
+  if(window.location.hash!==hash)window.history.pushState(null,'',hash);
+  setRoute(next);
+  setMessage('');
+ };
+ useEffect(()=>{
+  if(!admin)return;
+  const sync=()=>{
+   if(navLocked){window.history.replaceState(null,'',adminHash(route));return;}
+   setRoute(parseAdminRoute(window.location.hash,owner));
+  };
+  window.addEventListener('popstate',sync);
+  window.addEventListener('hashchange',sync);
+  return()=>{window.removeEventListener('popstate',sync);window.removeEventListener('hashchange',sync);};
+ },[admin,owner,navLocked,route]);
  useEffect(()=>{if(!navLocked)return;const warn=(e:BeforeUnloadEvent)=>{e.preventDefault();e.returnValue='';};window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);},[navLocked]);
  const login=async(e:React.FormEvent)=>{e.preventDefault();if(submitGuard.current)return;submitGuard.current=true;setBusy(true);setMessage('Contacting the account service…');try{const {data,error}=await corporateAuth.auth.signInWithPassword({email:email.trim(),password});if(error)throw new Error(authErrorMessage(error,'login'));if(!data.session)throw new Error('Sign-in did not return a session. Please retry.');setStoreToken(data.session.access_token);setSessionUser(data.session.user.id);setPassword('');}catch(error){setMessage(error instanceof Error?error.message:'Sign-in failed. Please retry.');}finally{submitGuard.current=false;setBusy(false);}};
  const logout=async()=>{setBusy(true);setMessage('Signing out…');try{const {error}=await corporateAuth.auth.signOut({scope:'local'});if(error)throw error;setStoreToken('');setSessionUser('');setMessage('Signed out.');}catch{setMessage('Sign-out could not be completed. Please retry.');}finally{setBusy(false);}};
  const refresh=async()=>{setBusy(true);setMessage('');try{const access=await checkAdminAccess(storeRequest);setOwner(access.owner);await load().catch(()=>{});}catch(error){setMessage(error instanceof Error?error.message:'Refresh failed.');setAdmin(false);}finally{setBusy(false);}};
  if(admin)return <AdminShell section={tab} owner={owner} locked={navLocked} onNavigate={navigate} toolbar={<><button className="button secondary" disabled={busy||dataLoading||navLocked} onClick={()=>void refresh()}>Refresh data</button><button className="button secondary" disabled={busy||navLocked} onClick={()=>void logout()}>Sign out</button></>}>
  {message&&<p className="admin-notice" role="status">{message}</p>}{dataLoading&&<p className="admin-notice" role="status">Loading store data…</p>}{dataError&&<p className="admin-notice is-error" role="alert">{dataError} Use Refresh data to retry.</p>}{navLocked&&<p className="admin-notice" role="status">Finish or retry the current stock adjustment before leaving this section.</p>}
- {hasData&&<>{tab==='dashboard'&&<AdminOverview products={rows} orders={orders} onNavigate={navigate}/>}{(tab==='executive'||tab==='analytics'||tab==='finance')&&<OperationsInsights products={rows} orders={orders} finance={tab==='finance'}/>}{tab==='products'&&<Inventory products={rows} refresh={load} onLockChange={setNavLocked}/>}{(tab==='inventory'||tab==='stock-adjustments')&&<InventoryWorkspace products={rows} refresh={load} mode={tab} onLockChange={setNavLocked}/>}{tab==='orders'&&<><ShopOrders orders={shopOrders} refresh={load}/><Orders orders={orders} refresh={load}/><p>Showing the latest 100 shop orders and requests. Refresh data for new submissions.</p></>}{tab==='customers'&&<CustomerRequests orders={orders}/>}</>}
+ {hasData&&<>{tab==='dashboard'&&<AdminOverview products={rows} orders={orders} shopOrders={shopOrders} onNavigate={navigate}/>}{(tab==='executive'||tab==='analytics'||tab==='finance')&&<OperationsInsights products={rows} orders={orders} finance={tab==='finance'}/>}{tab==='products'&&<Inventory key={task} initiallyPublished={task==='published'} products={rows} refresh={load} onLockChange={setNavLocked}/>}{(tab==='inventory'||tab==='stock-adjustments')&&<InventoryWorkspace key={task??tab} initiallyAttention={task==='stock-alerts'} products={rows} refresh={load} mode={tab} onLockChange={setNavLocked}/>}{tab==='orders'&&<>
+  <div role="group" className="catalogue-views" aria-label="Order workspace">
+   <button aria-pressed={!task} onClick={()=>navigate('orders')}>All shop orders</button>
+   <button aria-pressed={task==='to-fulfil'} onClick={()=>navigate('orders','to-fulfil')}>To fulfil</button>
+   <button aria-pressed={task==='requests'||task==='awaiting-review'} onClick={()=>navigate('orders','requests')}>Unpaid requests</button>
+  </div>
+  {task==='requests'||task==='awaiting-review'
+   ? <Orders key={task} initiallyAll={task==='requests'} orders={orders} refresh={load}/>
+   : <ShopOrders key={task} fulfilOnly={task==='to-fulfil'} orders={shopOrders} refresh={load}/>}
+ </>}{tab==='customers'&&<CustomerRequests orders={orders}/>}</>}
  {tab==='enquiries'&&<EnquiryQueue userId={sessionUser}/>} {tab==='imports'&&<ImportTools refresh={load}/>} {tab==='staff'&&owner&&<StaffControls/>}{tab==='permissions'&&<RolePermissions owner={owner}/>} {tab==='audit'&&owner&&<AuditEvents/>}{tab==='roadmap'&&<FeatureReadiness/>}{tab==='settings'&&<><CheckoutReadiness/><section className="store-panel"><h2>Account settings</h2><p>Manage your administrator account and access below. Payment processing is implemented, while store-wide fulfilment, tax and email-template controls remain outside this dashboard.</p></section><AccountControls signedIn/></>}
  </AdminShell>;
  return <section id="main" tabIndex={-1} className="admin-login-page"><div className="admin-login-brand"><span className="label">TECH & GUARD</span><h1 ref={heading} tabIndex={-1}>Store administration</h1><p>Sign in with your approved owner or staff account.</p><a href={PUBLIC_STORE_URL} className="text-link">Back to Store</a></div>{message&&<p className="admin-notice" role="status" aria-live="polite">{message}</p>}{sessionUser?<section className="store-panel"><h2>{checking?'Checking administrator access…':'Store account signed in'}</h2><p>{checking?'Please wait while store permissions are checked.':'Retry access checking below, or sign out and use your approved email.'}</p><div className="actions"><button className="button primary" disabled={checking||busy} onClick={()=>setAccessRevision(v=>v+1)}>Retry administrator access</button><button className="button secondary" disabled={busy} onClick={()=>void logout()}>Sign out</button></div></section>:<form className="store-panel" onSubmit={login} onInvalid={()=>setMessage('Enter a valid email and your password in the Administrator sign in form.')} aria-busy={busy}><h2>Administrator sign in</h2><label>Email<input type="email" autoComplete="username" required value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Password<input type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)}/></label><button className="button primary" disabled={busy}>{busy?'Signing in…':'Sign in to dashboard'}</button>{message&&<p role="status">{message}</p>}</form>}<AccountControls/></section>;

@@ -1,8 +1,8 @@
 import {useRef,useState} from 'react';
 import {OrderRequest,money} from './commerce';
 import {storeRequest} from './store-api';
-export function Orders({orders,refresh}:{orders:OrderRequest[];refresh:()=>Promise<void>}){
- const [search,setSearch]=useState(''),[filter,setFilter]=useState('requested'),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[cancelling,setCancelling]=useState<string|null>(null);
+export function Orders({orders,refresh,initiallyAll=false}:{initiallyAll?:boolean;orders:OrderRequest[];refresh:()=>Promise<void>}){
+ const [search,setSearch]=useState(''),[filter,setFilter]=useState(initiallyAll?'all':'requested'),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[cancelling,setCancelling]=useState<string|null>(null);
 
  const updating=useRef(false);
  const change=async(o:OrderRequest,status:'reviewed'|'cancelled')=>{

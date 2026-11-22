@@ -87,3 +87,41 @@
 @media(max-width:600px){.quote-desk-line{grid-template-columns:repeat(2,minmax(0,1fr))}.quote-desk-line label:first-child{grid-column:1/-1}}
 .shop-orders-admin{display:grid;gap:16px}.shop-orders-admin>p{color:#536477;font-size:12px;line-height:1.7}.shop-orders-admin .admin-section-heading{display:flex;align-items:center;justify-content:space-between;gap:15px}.shop-orders-admin .admin-section-heading h2{margin:0}.shop-orders-admin .admin-section-heading>span{font-size:11px;color:#536477}.shop-order-list{display:grid;gap:14px}.shop-order-card{padding:18px;border:1px solid #dfe5ec;border-radius:14px;background:#fff;box-shadow:0 8px 30px #17283d08;min-width:0}.shop-order-card>header,.shop-order-summary{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}.shop-order-card>header>div:first-child,.shop-order-summary>div{display:grid;gap:5px;min-width:0}.shop-order-card small,.shop-order-card a{font-size:11px;color:#536477;overflow-wrap:anywhere}.shop-order-badges{display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap}.shop-order-badges span{padding:5px 8px;border-radius:999px;background:#eef3f8;color:#233e5c;font-size:10px;font-weight:700}.shop-order-summary{margin:16px 0;padding:14px 0;border-block:1px solid #e5eaf0}.shop-order-summary>div:last-child{text-align:right}.shop-order-items{list-style:none;padding:0;margin:0;display:grid;gap:8px}.shop-order-items li{display:flex;justify-content:space-between;gap:14px;font-size:12px}.shop-order-items li span{overflow-wrap:anywhere}.shop-payment-reference{font-size:11px;color:#536477;overflow-wrap:anywhere}.shop-order-card details{font-size:11px;color:#536477}.shop-order-card summary{cursor:pointer;min-height:36px;padding-block:8px}.shop-order-card details ul{padding-left:20px;line-height:1.65}.shop-order-card footer{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}.shop-order-card footer .button{min-height:42px}
 @media(max-width:540px){.shop-order-card{padding:14px}.shop-order-card>header,.shop-order-summary{flex-direction:column;align-items:stretch}.shop-order-badges{justify-content:flex-start}.shop-order-summary>div:last-child{text-align:left}.shop-order-items li{align-items:flex-start}}
+
+/* Admin resource lists and operational shortcuts */
+.admin-app .catalogue-views {
+ display:flex; flex-wrap:wrap; gap:4px; margin-block:18px;
+ padding-bottom:10px; border-bottom:1px solid var(--executive-line);
+}
+.admin-app .catalogue-views button {
+ border:1px solid transparent; background:transparent; color:#415369;
+ padding:8px 12px; border-radius:8px; font-weight:600;
+}
+.admin-app .catalogue-views button[aria-pressed=true] {background:#e6eef5;color:#18324c;border-color:#c4d5e4}
+.catalogue-filter-row {display:grid;grid-template-columns:minmax(0,2fr) minmax(150px,1fr);gap:12px;align-items:end}
+.admin-app .catalogue-filter-row label {margin:0;min-width:0}
+.catalogue-results {display:flex;align-items:center;gap:14px;min-height:44px;color:#536477;font-size:13px}
+.admin-app .catalogue-results button {background:transparent;border:0;text-decoration:underline;color:#244b68}
+.publication-badge {display:inline-block;padding:3px 9px;border-radius:12px;background:#edf0f3;color:#445366;font-size:12px}
+.publication-badge.is-published {background:#dcf3e8;color:#155339}
+.admin-app .task-metric {text-align:left;cursor:pointer;color:inherit;min-width:0}
+.admin-app .task-metric:hover {border-color:#879eb2;background:#f8fbfd}
+.admin-sample-note {font-size:12px;color:#536477}
+@media(max-width:600px){.catalogue-filter-row{grid-template-columns:minmax(0,1fr)}}
+
+
+@media(max-width:600px){
+ .admin-app .catalogue-table {overflow:visible;border:0}
+ .admin-app .catalogue-table table {display:block;min-width:0;width:100%}
+ .catalogue-table thead {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ .catalogue-table tbody {display:grid;gap:12px}
+ .admin-app .catalogue-table tbody tr {
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
+  padding:14px;border:1px solid var(--executive-line);border-radius:10px;background:white;
+ }
+ .admin-app .catalogue-table tbody td {display:block;min-width:0;padding:0;border:0;overflow-wrap:anywhere}
+ .catalogue-table td[data-label]::before {content:attr(data-label);display:block;margin-bottom:4px;font-size:12px;color:#536477}
+ .catalogue-table td:first-child,.catalogue-table td:last-child {grid-column:1/-1}
+ .admin-app .catalogue-table td:last-child {display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid var(--executive-line);padding-top:10px}
+ .admin-app .catalogue-table td:last-child button {min-height:44px}
+}

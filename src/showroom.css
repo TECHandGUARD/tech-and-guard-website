@@ -140,3 +140,6 @@ body:has(.store-showroom) :is(.site-header,.mobile-bottom-nav) a[aria-current="p
 .shop-payment-result .order-reference {overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 .shop-payment-result .button {min-height:44px}
 @media(max-width:520px){.shop-checkout{padding:14px}.shop-checkout-heading{align-items:flex-start;flex-direction:column}.shop-payment-result{margin-block:14px}}
+
+.showroom-results {display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.showroom-results .text-link {background:none;border:0;cursor:pointer}

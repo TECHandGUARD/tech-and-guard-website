@@ -1,3 +1,4 @@
+import { needsFulfilment } from './admin-insights';
 import { useState } from 'react';
 import { money, type ShopOrder } from './commerce';
 import { storeRequest } from './store-api';
@@ -10,7 +11,15 @@ function addressText(address: Record<string, string>) {
   return [address.line1, address.line2, address.town, address.province, address.postal_code].filter(Boolean).join(', ');
 }
 
-export function ShopOrders({ orders, refresh }: { orders: ShopOrder[]; refresh: () => Promise<void> }) {
+export function ShopOrders({ orders, refresh, fulfilOnly=false }: { fulfilOnly?: boolean; orders: ShopOrder[]; refresh: () => Promise<void> }) {
+  const [query, setQuery] = useState('');
+  const [payment, setPayment] = useState('all');
+  const queue = fulfilOnly ? orders.filter(needsFulfilment) : orders;
+  const visible = queue.filter(order => {
+    const matchesPayment = payment === 'all' || order.payment_status === payment;
+    const searchable = [order.id, order.customer_name, order.email].join(' ').toLowerCase();
+    return matchesPayment && searchable.includes(query.trim().replace(/^#/, '').toLowerCase());
+  });
   const [busy, setBusy] = useState('');
   const [message, setMessage] = useState('');
   const move = async (order: ShopOrder, status: ShopOrder['fulfilment_status']) => {
@@ -27,11 +36,23 @@ export function ShopOrders({ orders, refresh }: { orders: ShopOrder[]; refresh: 
   };
 
   return <section className="shop-orders-admin" aria-labelledby="shop-orders-title">
-    <div className="admin-section-heading"><div><p className="admin-eyebrow">PAID STORE ORDERS</p><h2 id="shop-orders-title">Online shop orders</h2></div><span>{orders.length} recent</span></div>
+    <div className="admin-section-heading"><div><h2 id="shop-orders-title">{fulfilOnly ? 'Paid orders to fulfil' : 'Online shop orders'}</h2></div><span>{queue.length} recent</span></div>
     <p>Only verified PayFast notifications mark orders paid. Check payment review items and complete refunds in PayFast before recording them here.</p>
     {message && <p role="status" className="admin-notice">{message}</p>}
-    {!orders.length && <div className="store-panel"><h3>No online shop orders yet</h3><p>Orders will appear here after a customer pays through PayFast.</p></div>}
-    <div className="shop-order-list">{orders.map(order => {
+    {!queue.length && <div className="store-panel"><h3>{fulfilOnly ? 'No orders awaiting fulfilment' : 'No online shop orders yet'}</h3><p>{fulfilOnly ? 'Paid orders appear here when they are ready for processing or dispatch.' : 'Orders will appear here when a customer starts checkout.'}</p></div>}
+    {queue.length > 0 && <>
+      <div className="catalogue-filter-row">
+        <label>Find an order<input type="search" value={query} placeholder="Order number, customer or email" onChange={event => setQuery(event.target.value)}/></label>
+        {!fulfilOnly && <label>Payment status<select value={payment} onChange={event => setPayment(event.target.value)}>
+          <option value="all">All payments</option>
+          {['paid','pending','failed','expired','refunded'].map(status => <option key={status} value={status}>{status[0].toUpperCase()+status.slice(1)}</option>)}
+        </select></label>}
+      </div>
+      <div className="catalogue-results"><span role="status">{visible.length} matching {visible.length===1?'order':'orders'}</span>
+        {(query||payment!=='all')&&<button type="button" onClick={()=>{setQuery('');setPayment('all');}}>Clear filters</button>}
+      </div>
+    </>}
+    <div className="shop-order-list">{visible.map(order => {
       const action = nextStatus[order.fulfilment_status];
       return <article className="shop-order-card" key={order.id}>
         <header><div><strong>#{order.id.slice(0, 8)}</strong><small>{new Date(order.created_at).toLocaleString('en-ZA')}</small></div><div className="shop-order-badges"><span>{order.payment_status.replace(/_/g, ' ')}</span><span>{order.fulfilment_status.replace(/_/g, ' ')}</span></div></header>

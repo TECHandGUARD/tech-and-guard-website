@@ -44,3 +44,7 @@ See `docs/store-policy-review.md` for the policy draft, catalogue verification b
 See `docs/mvp-readiness-20261015.md` for verified state, unresolved production blockers, and the portable AWS deployment configuration.
 
 The protected `/account/` page shows customer requests; the `/admin/` dashboard manages inventory and request review. Run `db/test-corporate-orders.sql` transactionally after applying corporate migrations to verify workflow and access rules. Request submission is not a completed purchase.
+
+## Store administration settings
+
+Set `VITE_LOW_STOCK_LIMIT` to a positive whole number to change the low-stock threshold across the product list, dashboard and inventory alerts. The default is five units. Zero stock and unknown stock have their own statuses. Use the same value for both frontend builds and rebuild after changing it. This display setting does not change checkout reservations.

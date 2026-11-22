@@ -167,12 +167,15 @@ export function Store() {
     <label>Availability<select value={availability} onChange={e => setAvailability(e.target.value)}><option value="all">All products</option><option value="listed">Listed in stock</option><option value="confirm">Stock to confirm</option></select></label>
     <label>Sort by<select value={sort} onChange={e => setSort(e.target.value)}><option value="name">Name (A–Z)</option><option value="price-low">Price (low to high)</option><option value="price-high">Price (high to low)</option></select></label>
    </div>
-   <p className="catalogue-count" role="status">{filtered.length} of {products.length} products</p>
+   <div className="showroom-results">
+    <p className="catalogue-count" role="status">{filtered.length} of {products.length} products</p>
+    {(search||availability!=='all'||category!=='all')&&<button type="button" className="text-link" onClick={()=>{setSearch('');setAvailability('all');setCategory('all');}}>Clear filters</button>}
+   </div>
   </>}
   {state === 'loading' ? <p role="status">Loading products…</p>
    : state === 'error' ? <div className="store-panel"><p role="alert">The catalogue is temporarily unavailable.</p><button className="button secondary" onClick={() => { setState('loading'); setReload(n => n + 1); }}>Retry catalogue</button> <a className="text-link" href={`mailto:${enquiryEmail}`}>Email us about a product</a></div>
    : !products.length ? <div className="store-panel"><h3>Products coming soon</h3><p>Please contact us for the current catalogue.</p></div>
-   : !filtered.length ? <div><p>No products match these filters.</p><button className="button secondary" onClick={() => { setSearch(''); setAvailability('all'); setSort('name'); setCategory('all'); }}>Reset filters</button></div>
+   : !filtered.length ? <p>No products match these filters.</p>
    : <div className="showroom-grid">{filtered.map(p => {
     const quantity = quantityFor(p.sku);
     const atLimit = quantity >= basketQuantityLimit(p.stock) || (!quantity && Object.keys(basket).length >= maxBasketLines);

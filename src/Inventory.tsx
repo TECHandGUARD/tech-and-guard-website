@@ -1,3 +1,4 @@
+import {lowStockLimit,stockStatus} from './admin-insights';
 import {useEffect,useRef,useState} from 'react';
 import {catalogueImage} from './catalogue-display';
 import {Product,money,priceToCents} from './commerce';
@@ -8,8 +9,9 @@ const blankDraft = {sku:'',title:'',description:'',price:'',options:'',image:''}
 type Draft = typeof blankDraft;
 type Editor = {product:Product|null;draft:Draft};
 
-export function Inventory({products,refresh,onLockChange}:{products:Product[];refresh:()=>Promise<void>;onLockChange?:(locked:boolean)=>void}){
+export function Inventory({products,refresh,onLockChange,initiallyPublished=false}:{initiallyPublished?:boolean;products:Product[];refresh:()=>Promise<void>;onLockChange?:(locked:boolean)=>void}){
  const [filter,setFilter]=useState('');
+ const [publication,setPublication]=useState(initiallyPublished?'published':'all');
  const [stockFilter,setStockFilter]=useState('all');
  const [editor,setEditor]=useState<Editor|null>(null);
  const [adjusting,setAdjusting]=useState<Product|null>(null);
@@ -97,10 +99,8 @@ export function Inventory({products,refresh,onLockChange}:{products:Product[];re
   });
  }
 
- const visible=products.filter(product=>(stockFilter==='all'
-  ||stockFilter==='low'&&product.stock!==null&&product.stock>0&&product.stock<=5
-  ||stockFilter==='out'&&product.stock===0
-  ||stockFilter==='unknown'&&product.stock===null)
+ const visible=products.filter(product=>(publication==='all'||product.published===(publication==='published'))
+  &&(stockFilter==='all'||stockFilter===stockStatus(product.stock))
   &&(product.title+' '+product.sku).toLowerCase().includes(filter.trim().toLowerCase()));
  return <section className="store-panel">
   <div className="admin-card-heading">
@@ -130,17 +130,27 @@ export function Inventory({products,refresh,onLockChange}:{products:Product[];re
     </div>
    </fieldset>
   </form>}
+  <div className="catalogue-views" role="group" aria-label="Product visibility">
+   {['all','published','draft'].map(view=><button key={view} type="button" aria-pressed={publication===view} onClick={()=>setPublication(view)}>
+    {view==='all'?'All products':view==='published'?'Published':'Drafts'}
+   </button>)}
+  </div>
+  <div className="catalogue-filter-row">
   <label>Search by name or SKU<input type="search" value={filter} onChange={event=>setFilter(event.target.value)}/></label>
   <label>Stock status<select value={stockFilter} onChange={event=>setStockFilter(event.target.value)}>
-   <option value="all">All stock</option><option value="low">Low stock (1–5 units)</option><option value="out">Out of stock</option><option value="unknown">Unknown stock</option>
+   <option value="all">All stock</option><option value="low">Low stock (1–{lowStockLimit} units)</option><option value="out">Out of stock</option><option value="unknown">Unknown stock</option>
   </select></label>
+  </div>
   {adjusting&&<StockAdjustment key={adjusting.sku} product={adjusting} refresh={refresh} onLockChange={onLockChange} close={()=>setAdjusting(null)}/>}
-  <p>Use Adjust stock to record quantities and see stock history.</p>
-  {visible.length===0?<p>No products match this view.</p>:<div className="store-table admin-table-region" role="region" aria-label="Catalogue products" tabIndex={0}>
+  <div className="catalogue-results">
+   <span role="status">{visible.length} of {products.length} products</span>
+   {(filter||stockFilter!=='all'||publication!=='all')&&<button type="button" onClick={()=>{setFilter('');setStockFilter('all');setPublication('all');}}>Clear filters</button>}
+  </div>
+  {visible.length===0?<p>No products match this view.</p>:<div className="store-table admin-table-region catalogue-table" role="region" aria-label="Catalogue products" tabIndex={0}>
    <table><thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Visibility</th><th>Actions</th></tr></thead>
    <tbody>{visible.map(product=><tr key={product.sku}>
     <td>{product.title}<small className="sku">{product.sku}</small></td>
-    <td>{money(product.price_cents)}</td><td>{product.stock??'Unknown'}</td><td>{product.published?'Published':'Draft'}</td>
+    <td data-label="Price">{money(product.price_cents)}</td><td data-label="Stock">{product.stock??'Unknown'}</td><td data-label="Visibility"><span className={'publication-badge'+(product.published?' is-published':'')}>{product.published?'Published':'Draft'}</span></td>
     <td><button disabled={busy||!!adjusting||!!editor} onClick={()=>edit(product)}>Edit</button>{' '}
      <button disabled={busy||!!adjusting||!!editor} onClick={()=>setAdjusting(product)}>Adjust stock / history</button>{' '}
      <button disabled={busy||!!adjusting||!!editor} onClick={()=>void publish(product)}>{product.published?'Unpublish':'Publish'}</button></td>
