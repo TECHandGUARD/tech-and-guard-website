@@ -7,6 +7,7 @@ const repositoryRoot = resolve(appRoot, '../..');
 
 export default defineConfig({
   root: appRoot,
+  envDir: repositoryRoot,
   base: '/',
   server: {
     fs: { allow: [repositoryRoot] },

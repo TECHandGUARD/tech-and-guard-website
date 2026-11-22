@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 import json
 from time import time
 from playwright.sync_api import expect
+from store_workspace_browser import review_workspace, workspace_records
 
 fixture='https://themebrowserfixture.supabase.co'
 staff='7604d57c-daaa-4b84-b855-72491c179901'
@@ -39,7 +40,7 @@ def verify(browser, base, width):
         payload=request.post_data_json if request.method=='POST' else {}
         if name=='corporate_is_admin': data=True
         elif name=='corporate_staff_role': data='staff'
-        elif name in ('corporate_products','corporate_orders','corporate_list_shop_orders'): data=[]
+        elif name in ('corporate_products','corporate_orders','corporate_list_shop_orders'): data=workspace_records(name)
         elif name=='corporate_quote_desk_enquiries':
             data=[row for row in rows if not payload['p_overdue'] or row['follow_up_on']<date.today().isoformat()]
         elif name=='corporate_log_enquiry':
@@ -111,6 +112,7 @@ def verify(browser, base, width):
     card.get_by_role('button',name='Mark as accepted').click()
     expect(card.get_by_text('Quote · Accepted',exact=True)).to_be_visible()
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    review_workspace(page,width)
     assert not page_errors,page_errors
     print(f'PASS {width}px: isolated staff login, WhatsApp enquiry, overdue filter, reschedule, draft, sent, accepted',flush=True)
     ctx.close()

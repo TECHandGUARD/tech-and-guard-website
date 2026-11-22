@@ -1,3 +1,4 @@
+import { needsFulfilment } from './admin-insights';
 import { useState } from 'react';
 import { money, type ShopOrder } from './commerce';
 import { storeRequest } from './store-api';
@@ -10,10 +11,11 @@ function addressText(address: Record<string, string>) {
   return [address.line1, address.line2, address.town, address.province, address.postal_code].filter(Boolean).join(', ');
 }
 
-export function ShopOrders({ orders, refresh }: { orders: ShopOrder[]; refresh: () => Promise<void> }) {
+export function ShopOrders({ orders, refresh, fulfilOnly=false }: { fulfilOnly?: boolean; orders: ShopOrder[]; refresh: () => Promise<void> }) {
   const [query, setQuery] = useState('');
   const [payment, setPayment] = useState('all');
-  const visible = orders.filter(order => {
+  const queue = fulfilOnly ? orders.filter(needsFulfilment) : orders;
+  const visible = queue.filter(order => {
     const matchesPayment = payment === 'all' || order.payment_status === payment;
     const searchable = [order.id, order.customer_name, order.email].join(' ').toLowerCase();
     return matchesPayment && searchable.includes(query.trim().replace(/^#/, '').toLowerCase());
@@ -34,17 +36,17 @@ export function ShopOrders({ orders, refresh }: { orders: ShopOrder[]; refresh: 
   };
 
   return <section className="shop-orders-admin" aria-labelledby="shop-orders-title">
-    <div className="admin-section-heading"><div><h2 id="shop-orders-title">Online shop orders</h2></div><span>{orders.length} recent</span></div>
+    <div className="admin-section-heading"><div><h2 id="shop-orders-title">{fulfilOnly ? 'Paid orders to fulfil' : 'Online shop orders'}</h2></div><span>{queue.length} recent</span></div>
     <p>Only verified PayFast notifications mark orders paid. Check payment review items and complete refunds in PayFast before recording them here.</p>
     {message && <p role="status" className="admin-notice">{message}</p>}
-    {!orders.length && <div className="store-panel"><h3>No online shop orders yet</h3><p>Orders will appear here when a customer starts checkout.</p></div>}
-    {orders.length > 0 && <>
+    {!queue.length && <div className="store-panel"><h3>{fulfilOnly ? 'No orders awaiting fulfilment' : 'No online shop orders yet'}</h3><p>{fulfilOnly ? 'Paid orders appear here when they are ready for processing or dispatch.' : 'Orders will appear here when a customer starts checkout.'}</p></div>}
+    {queue.length > 0 && <>
       <div className="catalogue-filter-row">
         <label>Find an order<input type="search" value={query} placeholder="Order number, customer or email" onChange={event => setQuery(event.target.value)}/></label>
-        <label>Payment status<select value={payment} onChange={event => setPayment(event.target.value)}>
+        {!fulfilOnly && <label>Payment status<select value={payment} onChange={event => setPayment(event.target.value)}>
           <option value="all">All payments</option>
           {['paid','pending','failed','expired','refunded'].map(status => <option key={status} value={status}>{status[0].toUpperCase()+status.slice(1)}</option>)}
-        </select></label>
+        </select></label>}
       </div>
       <div className="catalogue-results"><span role="status">{visible.length} matching {visible.length===1?'order':'orders'}</span>
         {(query||payment!=='all')&&<button type="button" onClick={()=>{setQuery('');setPayment('all');}}>Clear filters</button>}

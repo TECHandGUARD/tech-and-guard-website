@@ -1,3 +1,4 @@
+import {lowStockLimit,stockStatus} from './admin-insights';
 import {useEffect,useRef,useState} from 'react';
 import {catalogueImage} from './catalogue-display';
 import {Product,money,priceToCents} from './commerce';
@@ -8,9 +9,9 @@ const blankDraft = {sku:'',title:'',description:'',price:'',options:'',image:''}
 type Draft = typeof blankDraft;
 type Editor = {product:Product|null;draft:Draft};
 
-export function Inventory({products,refresh,onLockChange}:{products:Product[];refresh:()=>Promise<void>;onLockChange?:(locked:boolean)=>void}){
+export function Inventory({products,refresh,onLockChange,initiallyPublished=false}:{initiallyPublished?:boolean;products:Product[];refresh:()=>Promise<void>;onLockChange?:(locked:boolean)=>void}){
  const [filter,setFilter]=useState('');
- const [publication,setPublication]=useState('all');
+ const [publication,setPublication]=useState(initiallyPublished?'published':'all');
  const [stockFilter,setStockFilter]=useState('all');
  const [editor,setEditor]=useState<Editor|null>(null);
  const [adjusting,setAdjusting]=useState<Product|null>(null);
@@ -99,10 +100,7 @@ export function Inventory({products,refresh,onLockChange}:{products:Product[];re
  }
 
  const visible=products.filter(product=>(publication==='all'||product.published===(publication==='published'))
-  &&(stockFilter==='all'
-  ||stockFilter==='low'&&product.stock!==null&&product.stock>0&&product.stock<=5
-  ||stockFilter==='out'&&product.stock===0
-  ||stockFilter==='unknown'&&product.stock===null)
+  &&(stockFilter==='all'||stockFilter===stockStatus(product.stock))
   &&(product.title+' '+product.sku).toLowerCase().includes(filter.trim().toLowerCase()));
  return <section className="store-panel">
   <div className="admin-card-heading">
@@ -140,7 +138,7 @@ export function Inventory({products,refresh,onLockChange}:{products:Product[];re
   <div className="catalogue-filter-row">
   <label>Search by name or SKU<input type="search" value={filter} onChange={event=>setFilter(event.target.value)}/></label>
   <label>Stock status<select value={stockFilter} onChange={event=>setStockFilter(event.target.value)}>
-   <option value="all">All stock</option><option value="low">Low stock (1–5 units)</option><option value="out">Out of stock</option><option value="unknown">Unknown stock</option>
+   <option value="all">All stock</option><option value="low">Low stock (1–{lowStockLimit} units)</option><option value="out">Out of stock</option><option value="unknown">Unknown stock</option>
   </select></label>
   </div>
   {adjusting&&<StockAdjustment key={adjusting.sku} product={adjusting} refresh={refresh} onLockChange={onLockChange} close={()=>setAdjusting(null)}/>}

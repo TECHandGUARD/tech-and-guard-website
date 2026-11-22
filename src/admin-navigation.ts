@@ -29,7 +29,31 @@ export const adminGroups:Array<{label:string;items:AdminNavItem[]}>= [
  {label:'Team & administration',items:[{id:'staff',label:'Staff & Roles',section:'staff',ownerOnly:true},{id:'permissions',label:'Permissions',section:'permissions'},{id:'tasks',label:'Tasks, calendar & shifts'},{id:'audit',label:'Audit Logs',section:'audit',ownerOnly:true},{id:'system',label:'System health & activity'},{id:'settings',label:'Settings',section:'settings'},{id:'roadmap',label:'Feature readiness',section:'roadmap'}]}
 ];
 export function availableAdminItems(owner:boolean){return adminGroups.flatMap(g=>g.items).filter(i=>!i.ownerOnly||owner);}
-export function parseAdminSection(hash:string,owner:boolean):AdminSection{
- let id=hash.replace(/^#\/?/,'');if(id==='inventory-alerts')id='inventory';return availableAdminItems(owner).find(i=>i.section===id)?.section??'dashboard';
+const taskSections = {
+ 'to-fulfil':'orders',
+ 'requests':'orders',
+ 'awaiting-review':'orders',
+ 'stock-alerts':'inventory',
+ 'published':'products',
+} as const;
+
+export type AdminTask = keyof typeof taskSections;
+export type AdminRoute = {section:AdminSection; task?:AdminTask};
+
+export function adminHash({section, task}:AdminRoute){
+ return '#' + section + (task && taskSections[task] === section ? '?view=' + task : '');
+}
+
+export function parseAdminRoute(hash:string,owner:boolean):AdminRoute{
+ const [path,query] = hash.replace(/^#\/?/,'').split('?');
+ const id = path === 'inventory-alerts' ? 'inventory' : path;
+ const section = availableAdminItems(owner).find(item=>item.section===id)?.section ?? 'dashboard';
+ const candidate = new URLSearchParams(query).get('view');
+ const task = Object.keys(taskSections).find(key=>key===candidate) as AdminTask|undefined;
+ return task && taskSections[task]===section ? {section,task} : {section};
+}
+
+export function parseAdminSection(hash:string,owner:boolean){
+ return parseAdminRoute(hash,owner).section;
 }
 export function adminTitle(section:AdminSection){return adminGroups.flatMap(g=>g.items).find(i=>i.section===section)?.label??'Dashboard';}

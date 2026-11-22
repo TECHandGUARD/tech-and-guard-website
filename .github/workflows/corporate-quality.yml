@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'src/**'
+      - 'apps/admin/**'
       - 'tests/**'
       - 'scripts/**'
       - 'supabase/functions/**'
@@ -38,6 +39,8 @@ jobs:
         run: npm ci
       - name: Typecheck and production build
         run: npm run build
+      - name: Build standalone admin
+        run: npm run build:admin
       - name: Unit and API regression tests
         run: node --experimental-strip-types --test tests/*.test.mjs
       - name: Ensure generated pages exist
@@ -80,8 +83,16 @@ jobs:
         run: |
           python -m pip install playwright==1.62.0
           python -m playwright install --with-deps --only-shell chromium
-      - name: Verify design gallery and project enquiries
+      - name: Verify storefront, admin and enquiry workflows
+        env:
+          STORE_REVIEW_IMAGES: browser-test-results/admin
         run: python tests/theme-browser.py
+      - name: Save desktop and mobile admin previews
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-workspace-previews
+          path: browser-test-results/admin/
+          retention-days: 14
       - name: Verify public Amplify deployment
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: python tests/theme-browser.py --live
