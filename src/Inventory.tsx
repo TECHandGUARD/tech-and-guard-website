@@ -146,11 +146,11 @@ export function Inventory({products,refresh,onLockChange,initiallyPublished=fals
    <span role="status">{visible.length} of {products.length} products</span>
    {(filter||stockFilter!=='all'||publication!=='all')&&<button type="button" onClick={()=>{setFilter('');setStockFilter('all');setPublication('all');}}>Clear filters</button>}
   </div>
-  {visible.length===0?<p>No products match this view.</p>:<div className="store-table admin-table-region" role="region" aria-label="Catalogue products" tabIndex={0}>
+  {visible.length===0?<p>No products match this view.</p>:<div className="store-table admin-table-region catalogue-table" role="region" aria-label="Catalogue products" tabIndex={0}>
    <table><thead><tr><th>Product</th><th>Price</th><th>Stock</th><th>Visibility</th><th>Actions</th></tr></thead>
    <tbody>{visible.map(product=><tr key={product.sku}>
     <td>{product.title}<small className="sku">{product.sku}</small></td>
-    <td>{money(product.price_cents)}</td><td>{product.stock??'Unknown'}</td><td><span className={'publication-badge'+(product.published?' is-published':'')}>{product.published?'Published':'Draft'}</span></td>
+    <td data-label="Price">{money(product.price_cents)}</td><td data-label="Stock">{product.stock??'Unknown'}</td><td data-label="Visibility"><span className={'publication-badge'+(product.published?' is-published':'')}>{product.published?'Published':'Draft'}</span></td>
     <td><button disabled={busy||!!adjusting||!!editor} onClick={()=>edit(product)}>Edit</button>{' '}
      <button disabled={busy||!!adjusting||!!editor} onClick={()=>setAdjusting(product)}>Adjust stock / history</button>{' '}
      <button disabled={busy||!!adjusting||!!editor} onClick={()=>void publish(product)}>{product.published?'Unpublish':'Publish'}</button></td>

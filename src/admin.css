@@ -108,3 +108,20 @@
 .admin-app .task-metric:hover {border-color:#879eb2;background:#f8fbfd}
 .admin-sample-note {font-size:12px;color:#536477}
 @media(max-width:600px){.catalogue-filter-row{grid-template-columns:minmax(0,1fr)}}
+
+
+@media(max-width:600px){
+ .admin-app .catalogue-table {overflow:visible;border:0}
+ .admin-app .catalogue-table table {display:block;min-width:0;width:100%}
+ .catalogue-table thead {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ .catalogue-table tbody {display:grid;gap:12px}
+ .admin-app .catalogue-table tbody tr {
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
+  padding:14px;border:1px solid var(--executive-line);border-radius:10px;background:white;
+ }
+ .admin-app .catalogue-table tbody td {display:block;min-width:0;padding:0;border:0;overflow-wrap:anywhere}
+ .catalogue-table td[data-label]::before {content:attr(data-label);display:block;margin-bottom:4px;font-size:12px;color:#536477}
+ .catalogue-table td:first-child,.catalogue-table td:last-child {grid-column:1/-1}
+ .admin-app .catalogue-table td:last-child {display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid var(--executive-line);padding-top:10px}
+ .admin-app .catalogue-table td:last-child button {min-height:44px}
+}

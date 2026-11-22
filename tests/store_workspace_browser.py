@@ -58,6 +58,13 @@ def review_workspace(page, width):
     expect(page.locator('tbody tr')).to_have_text(re.compile('Laptop sleeve'))
     page.get_by_role('button',name='Clear filters').click()
     expect(page.locator('tbody tr')).to_have_count(3)
+    if width < 600:
+        edit=page.locator('tbody tr').first.get_by_role('button',name='Edit',exact=True)
+        bounds=edit.bounding_box()
+        assert bounds and bounds['x']+bounds['width']<=width
+        edit.click()
+        expect(page.get_by_label('Product name',exact=True)).to_have_value('Desk charger')
+        page.get_by_role('button',name='Cancel editing').click()
     check_layout('products')
     if width < 760:
         page.get_by_role('button',name='Open navigation').click()
