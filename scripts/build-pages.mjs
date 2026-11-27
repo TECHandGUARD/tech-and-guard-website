@@ -1,10 +1,30 @@
 import fs from 'node:fs';
-import {loadEnv} from 'vite';
+import {createServer, loadEnv} from 'vite';
+import {createElement} from 'react';
+import {renderToString} from 'react-dom/server';
+import {blogHome, blogPages} from '../src/blog-content.ts';
 import {resolveStoreConfig} from '../src/store-config.ts';
 import {designThemes} from '../src/store-themes.ts';
 import {demoPages,themeDemoUrl} from '../src/theme-demo-content.ts';
 const {url:storeUrl} = resolveStoreConfig(loadEnv('production', process.cwd(), 'VITE_STORE_'));
 const pages={account:['Your account | Tech & Guard','Protected customer account and order requests.'],services:['Services | Tech & Guard','Business websites, independent online stores, custom applications and technology support.'],projects:['Projects | Tech & Guard','Explore SmartBridge FET and the independent Tech & Guard store.'],about:['About | Tech & Guard','Learn about TECH AND GUARD (Pty) Ltd, a South African technology company.'],store:['Store | Tech & Guard','Browse the published Tech & Guard product catalogue.'],'design-themes':['Design themes | Tech & Guard','Explore design directions for business websites, independent online stores and custom web applications.'],'store-themes':['Build an online store | Tech & Guard','Compare store design options and request a quote for your online store.'],contact:['Contact | Tech & Guard','Discuss your next website, store or digital project with Tech & Guard.'],terms:['Store terms | Tech & Guard','Read the Tech & GUARD store terms and current online checkout status.'],returns:['Returns and refunds | Tech & Guard','Read return, cancellation and refund information for Tech & GUARD store purchases.'],delivery:['Delivery and collection | Tech & Guard','Check current Tech & GUARD delivery and collection information.'],privacy:['Privacy notice | Tech & Guard','Learn how TECH AND GUARD (Pty) Ltd handles enquiry and store information.'],admin:['Store administration | Tech & Guard','Protected store administrator sign-in.']};
+// Give crawlers and social previews the same editorial content as the interactive site.
+const blogMarkup = new Map();
+const renderer = await createServer({
+ appType: 'custom',
+ server: {middlewareMode: true, hmr: false, watch: null},
+ optimizeDeps: {noDiscovery: true, include: []},
+});
+try {
+ const {Blog} = await renderer.ssrLoadModule('/src/Blog.tsx');
+ for (const post of blogPages) {
+  const key = post.path.slice(1);
+  pages[key] = [post.title + ' | Tech & Guard', post.description];
+  blogMarkup.set(key, renderToString(createElement(Blog, {path: post.path})));
+ }
+} finally {
+ await renderer.close();
+}
 const demoRoutes = new Set();
 for (const theme of designThemes) {
  for (const page of demoPages[theme.id]) {
@@ -20,12 +40,17 @@ const html=fs.readFileSync('dist/index.html','utf8').replace('</head>',`<meta ht
 fs.writeFileSync('dist/index.html',html.replace('</head>','<link rel="canonical" href="https://www.techandguard.co.za/"/></head>'));
 for (const [page, [title, description]] of Object.entries(pages)) {
  const url = `https://www.techandguard.co.za/${page}/`;
- const image = page === 'store' ? 'https://www.techandguard.co.za/images/store-editorial.webp' : null;
+ const blogPage = blogPages.find(post => post.path === '/' + page);
+ const image = blogPage ? 'https://www.techandguard.co.za' + blogPage.image : page === 'store' ? 'https://www.techandguard.co.za/images/store-editorial.webp' : null;
  fs.mkdirSync('dist/' + page, {recursive:true});
  let content = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`)
   .replace(/(<meta name="description" content=")[^"]*/, `$1${description}`)
   .replace(/(<meta property="og:title" content=")[^"]*/, `$1${title}`)
   .replace(/(<meta property="og:description" content=")[^"]*/, `$1${description}`);
+ if (blogPage) {
+  content = content.replace('<div id="root"></div>', () => '<div id="root"><main id="main">' + blogMarkup.get(page) + '</main></div>');
+  if (blogPage !== blogHome) content = content.replace('property="og:type" content="website"', 'property="og:type" content="article"');
+ }
  if (image) content = content.replace(/(<meta property="og:image" content=")[^"]*/, `$1${image}`);
  const robots = page === 'admin' || page === 'account' || demoRoutes.has(page) ? '<meta name="robots" content="noindex,nofollow"/>' : '';
  content = content.replace('</head>', `<link rel="canonical" href="${url}"/><meta property="og:url" content="${url}"/>${robots}</head>`);
